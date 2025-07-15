@@ -1,0 +1,34 @@
+{
+  "name": "@tigerdata/gh-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server to pull status from GitHub",
+  "license": "MIT",
+  "author": "TigerData",
+  "homepage": "https://tigerdata.com",
+  "type": "module",
+  "bin": {
+    "gh-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && shx chmod +x dist/*.js",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js",
+    "start:http": "node dist/streamableHttp.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.15.1",
+    "express": "^5.1.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.16.4",
+    "prettier": "^3.6.2",
+    "shx": "^0.3.4",
+    "typescript": "^5.6.2"
+  }
+}
