@@ -1,0 +1,25 @@
+deployment:
+  # NOTE: This value is set via the GitHub Actions deployment
+  # workflow in github.com/timescale/cloud-actions.
+  region: '-'
+name: 'tiger-gh-mcp-server'
+
+imageTag: latest
+imageName: 142548018081.dkr.ecr.us-east-1.amazonaws.com/tiger-gh-mcp-server
+imagePullPolicy: IfNotPresent
+
+replicas: 1
+terminationGracePeriodSeconds: 900 # 15 minutes
+
+github:
+  org: 'timescale'
+
+resources:
+  requests:
+    memory: '2Gi'
+    cpu: '500m'
+  limits:
+    memory: '2Gi'
+
+podAnnotations:
+  kubectl.kubernetes.io/default-container: tiger-gh-mcp-server
