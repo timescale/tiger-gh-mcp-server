@@ -1,5 +1,7 @@
 FROM node:22-alpine AS builder
 
+COPY package*.json /app/
+COPY tsconfig.json /app/
 COPY src /app/src
 
 WORKDIR /app

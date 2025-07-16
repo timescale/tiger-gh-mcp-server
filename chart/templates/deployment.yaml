@@ -43,6 +43,8 @@ spec:
         - name: {{ .Values.name }}
           image: {{ .Values.imageName }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
+          args:
+            - "streamableHttp"
 
           resources:
             requests:
