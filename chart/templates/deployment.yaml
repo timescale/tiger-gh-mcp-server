@@ -45,6 +45,9 @@ spec:
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           args:
             - "streamableHttp"
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+              protocol: TCP
 
           resources:
             requests:

@@ -8,6 +8,9 @@ imageTag: latest
 imageName: 142548018081.dkr.ecr.us-east-1.amazonaws.com/tiger-gh-mcp-server
 imagePullPolicy: IfNotPresent
 
+servicePort: 80
+containerPort: 3001
+
 replicas: 1
 terminationGracePeriodSeconds: 900 # 15 minutes
 
