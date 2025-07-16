@@ -44,6 +44,8 @@ spec:
           image: {{ .Values.imageName }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           args:
+            - "node"
+            - "dist/index.js"
             - "streamableHttp"
           ports:
             - containerPort: {{ .Values.containerPort }}
