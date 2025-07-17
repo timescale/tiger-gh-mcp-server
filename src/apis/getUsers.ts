@@ -8,6 +8,7 @@ const outputSchema = {
     z.object({
       email: z
         .string()
+        .nullable()
         .describe('The email account that is associated with the GitHub user.'),
       id: z.number(),
       username: z
@@ -45,7 +46,7 @@ export const getUsersFactory: ApiFactory<
             username: user.login,
           });
           return {
-            email: user.email,
+            email: user.email || null,
             id: user.id,
             username: user.login,
             fullName: userDetails.data.name || null,
@@ -56,6 +57,7 @@ export const getUsersFactory: ApiFactory<
             error,
           );
           return {
+            email: null,
             id: user.id,
             username: user.login,
             fullName: null,
