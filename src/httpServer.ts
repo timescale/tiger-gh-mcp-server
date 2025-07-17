@@ -14,6 +14,35 @@ if (!process.env.GITHUB_TOKEN) {
   throw new Error('GITHUB_TOKEN environment variable is required.');
 }
 
+let handlingExit = false;
+const exitHandler = (code = 0) => {
+  if (handlingExit) return;
+  handlingExit = true;
+
+  console.error('Shutting down server...');
+  server.close();
+
+  Promise.allSettled([
+    mcpCleanup()?.catch(console.error),
+    apiCleanup()?.catch(console.error),
+  ]).finally(() => {
+    console.error('Server shutdown complete');
+    process.exit(code);
+  });
+};
+
+// Handle server shutdown
+process.on('SIGINT', () => {
+  exitHandler();
+});
+process.on('SIGTERM', () => {
+  exitHandler();
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  exitHandler(1);
+});
+
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 });
@@ -38,17 +67,11 @@ app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
 
 // Start the server
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.error(`HTTP Server listening on port ${PORT}`);
-});
-
-// Handle server shutdown
-process.on('SIGINT', async () => {
-  console.error('Shutting down server...');
-
-  await mcpCleanup();
-  await apiCleanup();
-
-  console.error('Server shutdown complete');
-  process.exit(0);
+const server = app.listen(PORT, (error?: Error) => {
+  if (error) {
+    console.error('Error starting HTTP server:', error);
+    exitHandler(1);
+  } else {
+    console.error(`HTTP Server listening on port ${PORT}`);
+  }
 });
