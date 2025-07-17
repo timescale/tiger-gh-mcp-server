@@ -23,9 +23,12 @@ const outputSchema = {
 
 export const getUsersFactory: ApiFactory<
   typeof inputSchema,
-  typeof outputSchema
+  typeof outputSchema,
+  z.infer<(typeof outputSchema)['results']>
 > = ({ octokit, org }) => ({
   name: 'getUsers',
+  method: 'get',
+  route: '/users',
   config: {
     title: 'Get users',
     description:
@@ -70,4 +73,5 @@ export const getUsersFactory: ApiFactory<
       results: userList,
     };
   },
+  pickResult: (r) => r.results,
 });

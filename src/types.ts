@@ -18,12 +18,19 @@ export type ToolConfig<
 export interface ApiDefinition<
   InputArgs extends ZodRawShape,
   OutputArgs extends ZodRawShape,
+  SimplifiedOutputArgs = OutputArgs,
 > {
   name: string;
+  method?: 'get' | 'post' | 'put' | 'delete';
+  route?: string;
   config: ToolConfig<InputArgs, OutputArgs>;
   fn: (
     args: z.objectOutputType<InputArgs, ZodTypeAny>,
   ) => Promise<z.objectOutputType<OutputArgs, ZodTypeAny>>;
+  // workaround for the fact that OutputArgs can't be an array
+  pickResult?: (
+    result: z.objectOutputType<OutputArgs, ZodTypeAny>,
+  ) => SimplifiedOutputArgs;
 }
 
 export interface ServerContext {
@@ -31,9 +38,9 @@ export interface ServerContext {
   org: string;
 }
 
-export type ApiFactory<I extends ZodRawShape, O extends ZodRawShape> = (
+export type ApiFactory<I extends ZodRawShape, O extends ZodRawShape, S> = (
   ctx: ServerContext,
-) => ApiDefinition<I, O>;
+) => ApiDefinition<I, O, S>;
 
 /**
  * RouterFactory returns an Express Router and a cleanup function.

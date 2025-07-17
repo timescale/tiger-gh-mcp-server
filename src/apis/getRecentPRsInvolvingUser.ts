@@ -35,9 +35,12 @@ const outputSchema = {
 
 export const getRecentPRsInvolvingUserFactory: ApiFactory<
   typeof inputSchema,
-  typeof outputSchema
+  typeof outputSchema,
+  z.infer<(typeof outputSchema)['results']>
 > = ({ octokit, org }) => ({
   name: 'getRecentPRsInvolvingUser',
+  method: 'get',
+  route: '/recent-prs-involving-user',
   config: {
     title: 'Get Recent PRs for User',
     description:
@@ -77,4 +80,5 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
       })),
     };
   },
+  pickResult: (r) => r.results,
 });
