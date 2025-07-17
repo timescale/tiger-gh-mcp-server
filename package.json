@@ -16,8 +16,8 @@
     "build": "tsc && shx chmod +x dist/*.js",
     "prepare": "npm run build",
     "watch": "tsc --watch",
-    "start": "node dist/index.js",
-    "start:http": "node dist/streamableHttp.js"
+    "start": "node dist/index.js stdio",
+    "start:http": "node dist/index.js http"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.1",

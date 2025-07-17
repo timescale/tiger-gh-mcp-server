@@ -1,13 +1,29 @@
 #!/usr/bin/env node
-
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { createServer } from './mcpServer.js';
+import { ServerContext } from './types.js';
+import { Octokit } from '@octokit/rest';
+
+const org = process.env.GITHUB_ORG;
+if (!org) {
+  throw new Error('GITHUB_ORG environment variable is required.');
+}
+
+if (!process.env.GITHUB_TOKEN) {
+  throw new Error('GITHUB_TOKEN environment variable is required.');
+}
+
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN,
+});
+
+const context: ServerContext = { octokit, org };
 
 console.error('Starting default (STDIO) server...');
 
 async function main() {
   const transport = new StdioServerTransport();
-  const { server } = createServer();
+  const { server } = createServer(context);
 
   await server.connect(transport);
 

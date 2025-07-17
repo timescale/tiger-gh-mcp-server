@@ -1,12 +1,14 @@
-# MCP "Everything" Server - Development Guidelines
+# Tiger GitHub MCP Server - Development Guidelines
 
 ## Build, Test & Run Commands
+
 - Build: `npm run build` - Compiles TypeScript to JavaScript
 - Watch mode: `npm run watch` - Watches for changes and rebuilds automatically
 - Run server: `npm run start` - Starts the MCP server using stdio transport
 - Prepare release: `npm run prepare` - Builds the project for publishing
 
 ## Code Style Guidelines
+
 - Use ES modules with `.js` extension in import paths
 - Strictly type all functions and variables with TypeScript
 - Follow zod schema patterns for tool input validation

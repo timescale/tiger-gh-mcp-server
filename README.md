@@ -4,7 +4,7 @@ A wrapper around the GitHub API to provide some focused tools to LLMs via the [M
 
 ## Development
 
-Run `npm i` to install dependencies and build the project.
+Run `npm i` to install dependencies and build the project. Use `npm run watch` to rebuild on changes.
 
 You will need a GitHub token with the correct scopes. Here is a direct link to [create such a new token](https://github.com/settings/tokens/new?scopes=repo,read:org,read:user,user:email&description=tiger-gh-mcp-server).
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import 'dotenv/config';
 
 // Parse command line arguments first
 const args = process.argv.slice(2);
@@ -9,18 +10,18 @@ async function run() {
     // Dynamically import only the requested module to prevent all modules from initializing
     switch (scriptName) {
       case 'stdio':
-        // Import and run the default server
+        // Import and run the stdio server
         await import('./stdio.js');
         break;
-      case 'streamableHttp':
-        // Import and run the streamable HTTP server
-        await import('./streamableHttp.js');
+      case 'http':
+        // Import and run the HTTP server
+        await import('./httpServer.js');
         break;
       default:
         console.error(`Unknown script: ${scriptName}`);
         console.log('Available scripts:');
         console.log('- stdio');
-        console.log('- streamableHttp');
+        console.log('- http');
         process.exit(1);
     }
   } catch (error) {

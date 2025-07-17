@@ -1,21 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
+import { getRecentPRsInvolvingUserFactory } from './apis/getRecentPRsInvolvingUser.js';
+import { ServerContext } from './types.js';
 
-import { Octokit } from '@octokit/rest';
-
-import 'dotenv/config';
-
-if (!process.env.GITHUB_TOKEN) {
-  throw new Error('GITHUB_TOKEN environment variable is required.');
-}
-
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
-});
-
-const org = process.env.GITHUB_ORG;
-
-export const createServer = () => {
+export const createServer = (context: ServerContext) => {
   const server = new McpServer(
     {
       name: 'tiger-gh',
@@ -28,78 +15,28 @@ export const createServer = () => {
     },
   );
 
-  server.registerTool(
-    'getRecentPRsInvolvingUser',
-    {
-      title: 'Get Recent PRs for User',
-      description:
-        'Fetches recent pull requests for a specific user in the configured GitHub organization.',
-      inputSchema: {
-        username: z
-          .string()
-          .describe('The GitHub username to fetch pull requests for.'),
-        since: z
-          .string()
-          .regex(/^(\d{4}-\d{2}-\d{2})?$/, 'Date must be in YYYY-MM-DD format')
-          .optional()
-          .describe(
-            'Fetch PRs updated since this date (YYYY-MM-DD). Defaults to 7 days ago.',
-          ),
-      },
-    },
-    async ({ username, since }) => {
+  [getRecentPRsInvolvingUserFactory].forEach((factory) => {
+    const tool = factory(context);
+    // Omit the outputSchema for now, since clients might not support it yet
+    const { outputSchema, ...configWithoutOutput } = tool.config;
+    server.registerTool(tool.name, configWithoutOutput, async (args) => {
       try {
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        const updatedSince = since || oneWeekAgo.toISOString().split('T')[0];
-
-        const rawPRs = await octokit.paginate(
-          octokit.rest.search.issuesAndPullRequests,
-          {
-            advanced_search: 'true',
-            q: `is:pr involves:${username}${org ? ` org:${org}` : ''} updated:>=${updatedSince}`,
-            sort: 'updated',
-            order: 'desc',
-          },
-        );
-
-        const pullRequests = rawPRs.map((pr) => ({
-          author: pr.user?.login || 'unknown',
-          closedAt: pr.closed_at,
-          createdAt: pr.created_at,
-          description: pr.body,
-          draft: pr.draft || false,
-          mergedAt: pr.pull_request?.merged_at || null,
-          number: pr.number,
-          repository: pr.repository_url.split('/').slice(-2).join('/'),
-          state: pr.state,
-          title: pr.title,
-          updatedAt: pr.updated_at,
-          url: pr.html_url,
-        }));
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(pullRequests),
-            },
-          ],
-        };
+        const result = await tool.fn(args);
+        return { content: [{ type: 'text', text: JSON.stringify(result) }] };
       } catch (error) {
-        console.error('Error fetching pull requests:', error);
+        console.error('Error invoking tool:', error);
         return {
           content: [
             {
               type: 'text',
-              text: `Error fetching pull requests for user ${username}.`,
+              text: `Error: ${(error as Error).message || 'Unknown error'}`,
             },
           ],
           isError: true,
         };
       }
-    },
-  );
+    });
+  });
 
   return { server };
 };
