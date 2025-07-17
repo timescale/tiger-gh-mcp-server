@@ -46,7 +46,7 @@ export const getUsersFactory: ApiFactory<
             username: user.login,
           });
           return {
-            email: user.email || null,
+            email: userDetails.data.email || null,
             id: user.id,
             username: user.login,
             fullName: userDetails.data.name || null,
