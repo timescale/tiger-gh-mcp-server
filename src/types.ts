@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import type { ZodRawShape, ZodTypeAny } from 'zod';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
-import { ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Router } from 'express';
 import { Octokit } from '@octokit/rest';
 
