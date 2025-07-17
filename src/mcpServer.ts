@@ -1,5 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import factories from './apis/index.js';
+import apiFactories from './apis/index.js';
 import { ServerContext } from './types.js';
 
 export const createServer = (context: ServerContext) => {
@@ -15,7 +15,7 @@ export const createServer = (context: ServerContext) => {
     },
   );
 
-  factories.forEach((factory) => {
+  apiFactories.forEach((factory) => {
     const tool = factory(context);
     // Omit the outputSchema for now, since clients might not support it yet
     const { outputSchema, ...configWithoutOutput } = tool.config;
