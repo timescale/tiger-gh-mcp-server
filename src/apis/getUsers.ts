@@ -6,6 +6,9 @@ const inputSchema = {} as const;
 const outputSchema = {
   results: z.array(
     z.object({
+      email: z
+        .string()
+        .describe('The email account that is associated with the GitHub user.'),
       id: z.number(),
       username: z
         .string()
@@ -42,6 +45,7 @@ export const getUsersFactory: ApiFactory<
             username: user.login,
           });
           return {
+            email: user.email,
             id: user.id,
             username: user.login,
             fullName: userDetails.data.name || null,
