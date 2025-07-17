@@ -30,10 +30,6 @@ export const getUsersFactory: ApiFactory<
     outputSchema,
   },
   fn: async () => {
-    if (!org) {
-      throw new Error('GITHUB_ORG environment variable is required.');
-    }
-
     const users = await octokit.paginate(octokit.rest.orgs.listMembers, {
       org: org,
       per_page: 100,
