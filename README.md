@@ -48,3 +48,19 @@ Create/edit the file `~/Library/Application Support/Claude/claude_desktop_config
   }
 }
 ```
+
+## Deployment
+
+We use a Helm chart to deploy to Kubernetes. See the `chart/` directory for details.
+
+### Secrets
+
+Run the following to create a sealed secret for the GitHub credentials. Be sure to fill in the correct values.
+
+```bash
+kubectl -n savannah-system create secret generic tiger-gh-mcp-server-github \
+  --from-literal=token="ghp_abc123" \
+  -o yaml | kubeseal -o yaml
+```
+
+Update `./chart/values/dev.yaml` with the output.
