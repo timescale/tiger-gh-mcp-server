@@ -13,7 +13,7 @@ export const mcpRouterFactory: RouterFactory = (context) => {
     StreamableHTTPServerTransport
   >();
 
-  router.post('/', async (req: Request, res: Response) => {
+  router.post('/mcp', async (req: Request, res: Response) => {
     console.error('Received MCP POST request');
     try {
       // Check for existing session ID
