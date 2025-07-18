@@ -115,7 +115,7 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
           title: pr.title,
           updatedAt: pr.updated_at,
           url: pr.html_url,
-          commits: includeAllCommits ? await getCommits(owner, repo, pr.number) : undefined,
+          commits: includeAllCommits && (pr.user?.login === username) ? await getCommits(owner, repo, pr.number) : undefined,
         };
       }),
     );
