@@ -54,7 +54,7 @@ const app = express();
 const context: ServerContext = { octokit, org };
 
 const [mcpRouter, mcpCleanup] = mcpRouterFactory(context);
-app.use(mcpRouter);
+app.use('/mcp', mcpRouter);
 
 const [apiRouter, apiCleanup] = apiRouterFactory(context);
 app.use('/api', apiRouter);

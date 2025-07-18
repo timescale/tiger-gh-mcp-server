@@ -17,7 +17,8 @@
     "prepare": "npm run build",
     "watch": "tsc --watch",
     "start": "node dist/index.js stdio",
-    "start:http": "node dist/index.js http"
+    "start:http": "node dist/index.js http",
+    "inspector": "npx @modelcontextprotocol/inspector"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.1",
