@@ -59,6 +59,7 @@ Run the following to create a sealed secret for the GitHub credentials. Be sure 
 
 ```bash
 kubectl -n savannah-system create secret generic tiger-gh-mcp-server-github \
+  --dry-run=client \
   --from-literal=token="ghp_abc123" \
   -o yaml | kubeseal -o yaml
 ```
