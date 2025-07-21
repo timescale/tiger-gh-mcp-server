@@ -35,15 +35,17 @@ const outputSchema = {
       title: z.string(),
       updatedAt: z.string(),
       url: z.string().url(),
-      commits: z.array(
-        z.object({
-          author: z.string().nullable(),
-          date: z.string().nullable(),
-          message: z.string(),
-          sha: z.string(),
-          url: z.string().url(),
-        }),
-      ).optional(),
+      commits: z
+        .array(
+          z.object({
+            author: z.string().nullable(),
+            date: z.string().nullable(),
+            message: z.string(),
+            sha: z.string(),
+            url: z.string().url(),
+          }),
+        )
+        .optional(),
     }),
   ),
 } as const;
@@ -78,7 +80,11 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
       },
     );
 
-    const getCommits = async (owner: string, repo: string, pullNumber: number) => {
+    const getCommits = async (
+      owner: string,
+      repo: string,
+      pullNumber: number,
+    ) => {
       try {
         const commits = await octokit.rest.pulls.listCommits({
           owner,
@@ -102,6 +108,8 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
     const results = await Promise.all(
       rawPRs.map(async (pr) => {
         const [owner, repo] = pr.repository_url.split('/').slice(-2);
+        const shouldFetchRelatedCommits =
+          includeAllCommits && pr.user?.login === username;
         return {
           author: pr.user?.login || 'unknown',
           closedAt: pr.closed_at,
@@ -115,7 +123,9 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
           title: pr.title,
           updatedAt: pr.updated_at,
           url: pr.html_url,
-          commits: includeAllCommits && (pr.user?.login === username) ? await getCommits(owner, repo, pr.number) : undefined,
+          commits: shouldFetchRelatedCommits
+            ? await getCommits(owner, repo, pr.number)
+            : undefined,
         };
       }),
     );
