@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { ApiFactory } from '../types.js';
+import { ApiFactory } from '../shared/boilerplate/src/types.js';
+import { ServerContext } from '../types.js';
 
 const inputSchema = {
   username: z
@@ -35,20 +36,23 @@ const outputSchema = {
       title: z.string(),
       updatedAt: z.string(),
       url: z.string().url(),
-      commits: z.array(
-        z.object({
-          author: z.string().nullable(),
-          date: z.string().nullable(),
-          message: z.string(),
-          sha: z.string(),
-          url: z.string().url(),
-        }),
-      ).optional(),
+      commits: z
+        .array(
+          z.object({
+            author: z.string().nullable(),
+            date: z.string().nullable(),
+            message: z.string(),
+            sha: z.string(),
+            url: z.string().url(),
+          }),
+        )
+        .optional(),
     }),
   ),
 } as const;
 
 export const getRecentPRsInvolvingUserFactory: ApiFactory<
+  ServerContext,
   typeof inputSchema,
   typeof outputSchema,
   z.infer<(typeof outputSchema)['results']>
@@ -78,7 +82,11 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
       },
     );
 
-    const getCommits = async (owner: string, repo: string, pullNumber: number) => {
+    const getCommits = async (
+      owner: string,
+      repo: string,
+      pullNumber: number,
+    ) => {
       try {
         const commits = await octokit.rest.pulls.listCommits({
           owner,
@@ -115,7 +123,10 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
           title: pr.title,
           updatedAt: pr.updated_at,
           url: pr.html_url,
-          commits: includeAllCommits && (pr.user?.login === username) ? await getCommits(owner, repo, pr.number) : undefined,
+          commits:
+            includeAllCommits && pr.user?.login === username
+              ? await getCommits(owner, repo, pr.number)
+              : undefined,
         };
       }),
     );

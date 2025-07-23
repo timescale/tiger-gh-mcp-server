@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { ApiFactory } from '../types.js';
+import { ServerContext } from '../types.js';
+import { ApiFactory } from '../shared/boilerplate/src/types.js';
 
 const inputSchema = {} as const;
 
@@ -22,6 +23,7 @@ const outputSchema = {
 } as const;
 
 export const getUsersFactory: ApiFactory<
+  ServerContext,
   typeof inputSchema,
   typeof outputSchema,
   z.infer<(typeof outputSchema)['results']>

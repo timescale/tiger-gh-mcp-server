@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { ApiFactory } from '../types.js';
+import { ApiFactory } from '../shared/boilerplate/src/types.js';
+import { ServerContext } from '../types.js';
 
 const inputSchema = {
   username: z.string().describe('The GitHub username to fetch commits for.'),
@@ -26,6 +27,7 @@ const outputSchema = {
 } as const;
 
 export const getRecentCommitsFactory: ApiFactory<
+  ServerContext,
   typeof inputSchema,
   typeof outputSchema,
   z.infer<(typeof outputSchema)['results']>
