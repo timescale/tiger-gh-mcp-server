@@ -84,6 +84,11 @@ kubectl -n savannah-system create secret generic tiger-gh-mcp-server-github \
   --dry-run=client \
   --from-literal=token="ghp_abc123" \
   -o yaml | kubeseal -o yaml
+
+kubectl -n savannah-system create secret generic tiger-gh-mcp-server-logfire \
+  --dry-run=client \
+  --from-literal=token="pylf_v1_us_" \
+  -o yaml | kubeseal -o yaml
 ```
 
 Update `./chart/values/dev.yaml` with the output.
