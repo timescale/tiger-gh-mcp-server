@@ -23,7 +23,7 @@ const octokit = new ThrottledOktokit({
   auth: process.env.GITHUB_TOKEN,
   throttle: {
     onRateLimit: (retryAfter, options, _, retryCount) => {
-      octokit.log.warn(
+      console.warn(
         `Request quota exhausted for request ${options.method} ${options.url} (retryCount=${retryCount}), waiting ${retryAfter} seconds`,
       );
 
