@@ -17,7 +17,9 @@ if (!process.env.GITHUB_TOKEN) {
 }
 
 const ThrottledOktokit = Octokit.plugin(throttling);
-const NUMBER_OF_RETRIES = process.env.GITHUB_REQUEST_RETRIES || 2;
+const NUMBER_OF_RETRIES = process.env.GITHUB_REQUEST_RETRIES
+  ? parseInt(process.env.GITHUB_REQUEST_RETRIES)
+  : 2;
 
 const octokit = new ThrottledOktokit({
   auth: process.env.GITHUB_TOKEN,
