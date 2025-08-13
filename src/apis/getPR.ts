@@ -10,7 +10,7 @@ const inputSchema = {
     .number()
     .nullable()
     .describe('The pull request number to fetch.'),
-  repo: z
+  repository: z
     .string()
     .nullable()
     .describe('The repository name when using pullNumber.'),
@@ -39,7 +39,7 @@ export const getPRFactory: ApiFactory<
     inputSchema,
     outputSchema,
   },
-  fn: async ({ url, pullNumber, repo, includeCommits }) => {
+  fn: async ({ url, pullNumber, repository: repo, includeCommits }) => {
     let repoName: string;
     let prNumber: number;
 
@@ -74,7 +74,9 @@ export const getPRFactory: ApiFactory<
         title: pr.data.title,
         updatedAt: pr.data.updated_at,
         url: pr.data.html_url,
-        commits: includeCommits ? await getCommits(octokit, org, repoName, prNumber) : undefined,
+        commits: includeCommits
+          ? await getCommits(octokit, org, repoName, prNumber)
+          : undefined,
       };
 
       return { result };
