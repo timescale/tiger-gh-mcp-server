@@ -1,6 +1,6 @@
 export interface ParsedPRInfo {
-  repoName: string;
-  prNumber: number;
+  repository: string;
+  pullRequestNumber: number;
 }
 
 export function parsePullRequestURL(url: string): ParsedPRInfo {
@@ -14,5 +14,5 @@ export function parsePullRequestURL(url: string): ParsedPRInfo {
   const repoName = match[1];
   const prNumber = parseInt(match[2], 10);
 
-  return { repoName, prNumber };
+  return { repository: repoName, pullRequestNumber: prNumber };
 }

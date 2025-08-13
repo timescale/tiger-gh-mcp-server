@@ -6,7 +6,7 @@ import { getCommits } from '../util/getCommits.js';
 
 const inputSchema = {
   url: z.string().nullable().describe('The GitHub pull request URL to fetch.'),
-  pullNumber: z
+  pullRequestNumber: z
     .number()
     .nullable()
     .describe('The pull request number to fetch.'),
@@ -39,17 +39,25 @@ export const getPRFactory: ApiFactory<
     inputSchema,
     outputSchema,
   },
-  fn: async ({ url, pullNumber, repository: repo, includeCommits }) => {
-    let repoName: string;
-    let prNumber: number;
+  fn: async ({
+    url,
+    pullRequestNumber: passedPullRequestNumber,
+    repository: passedRepository,
+    includeCommits,
+  }) => {
+    let repository: string;
+    let pullNumber: number;
 
     if (url) {
-      const parsed = parsePullRequestURL(url);
-      repoName = parsed.repoName;
-      prNumber = parsed.prNumber;
-    } else if (pullNumber && repo) {
-      repoName = repo;
-      prNumber = pullNumber;
+      const {
+        repository: parsedRepository,
+        pullRequestNumber: parsedPullRequestNumber,
+      } = parsePullRequestURL(url);
+      repository = parsedRepository;
+      pullNumber = parsedPullRequestNumber;
+    } else if (passedPullRequestNumber && passedRepository) {
+      repository = passedRepository;
+      pullNumber = passedPullRequestNumber;
     } else {
       throw new Error('Must provide either url or both pullNumber and repo');
     }
@@ -57,8 +65,8 @@ export const getPRFactory: ApiFactory<
     try {
       const pr = await octokit.rest.pulls.get({
         owner: org,
-        repo: repoName,
-        pull_number: prNumber,
+        repo: repository,
+        pull_number: pullNumber,
       });
 
       const result = {
@@ -69,13 +77,13 @@ export const getPRFactory: ApiFactory<
         draft: pr.data.draft || false,
         mergedAt: pr.data.merged_at,
         number: pr.data.number,
-        repository: `${org}/${repoName}`,
+        repository: `${org}/${repository}`,
         state: pr.data.state,
         title: pr.data.title,
         updatedAt: pr.data.updated_at,
         url: pr.data.html_url,
         commits: includeCommits
-          ? await getCommits(octokit, org, repoName, prNumber)
+          ? await getCommits(octokit, org, repository, pullNumber)
           : undefined,
       };
 
