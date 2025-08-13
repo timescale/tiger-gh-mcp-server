@@ -47,9 +47,10 @@ export const getPRFactory: ApiFactory<
   }) => {
     let repository: string;
     let pullNumber: number;
+    let owner = org;
 
     if (url) {
-      ({ repository, pullNumber } = parsePullRequestURL(url));
+      ({ repository, pullNumber, owner } = parsePullRequestURL(url));
     } else if (passedPullNumber && passedRepository) {
       repository = passedRepository;
       pullNumber = passedPullNumber;
@@ -59,7 +60,7 @@ export const getPRFactory: ApiFactory<
 
     try {
       const pr = await octokit.rest.pulls.get({
-        owner: org,
+        owner,
         repo: repository,
         pull_number: pullNumber,
       });
