@@ -16,7 +16,7 @@ const inputSchema = {
     .describe('The repository name when using pullNumber.'),
   includeCommits: z
     .boolean()
-    .optional()
+    .nullable()
     .describe('If true, includes all commits for the pull request.'),
 } as const;
 
