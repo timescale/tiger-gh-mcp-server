@@ -1,9 +1,22 @@
 import { z } from 'zod';
 import { ApiFactory } from '../shared/boilerplate/src/types.js';
 import { ServerContext, zPullRequest } from '../types.js';
+import { parsePullRequestURL } from '../util/parsePullRequestURL.js';
 
 const inputSchema = {
-  url: z.string().url().describe('The GitHub pull request URL to fetch.'),
+  url: z
+    .string()
+    .url()
+    .optional()
+    .describe('The GitHub pull request URL to fetch.'),
+  pullNumber: z
+    .number()
+    .optional()
+    .describe('The pull request number to fetch.'),
+  repo: z
+    .string()
+    .optional()
+    .describe('The repository name when using pullNumber.'),
 } as const;
 
 const outputSchema = {
@@ -14,45 +27,45 @@ export const getPRFactory: ApiFactory<
   ServerContext,
   typeof inputSchema,
   typeof outputSchema
-> = ({ octokit }) => ({
+> = ({ octokit, org }) => ({
   name: 'getPR',
   method: 'get',
   route: '/pr',
   config: {
     title: 'Get Pull Request',
-    description: 'Fetches a specific pull request by URL.',
+    description:
+      'Fetches a specific pull request by URL or pull number and repo.',
     inputSchema,
     outputSchema,
   },
-  fn: async ({ url }) => {
-    const urlParts = new URL(url);
-    const pathParts = urlParts.pathname.split('/');
+  fn: async ({ url, pullNumber, repo }) => {
+    let repoName: string;
+    let prNumber: number;
 
-    if (pathParts.length < 5 || pathParts[3] !== 'pull') {
-      throw new Error('Invalid GitHub PR URL format');
-    }
-
-    const owner = pathParts[1];
-    const repo = pathParts[2];
-    const pullNumber = parseInt(pathParts[4], 10);
-
-    if (isNaN(pullNumber)) {
-      throw new Error('Invalid pull request number in URL');
+    if (url) {
+      const parsed = parsePullRequestURL(url);
+      repoName = parsed.repoName;
+      prNumber = parsed.prNumber;
+    } else if (pullNumber && repo) {
+      repoName = repo;
+      prNumber = pullNumber;
+    } else {
+      throw new Error('Must provide either url or both pullNumber and repo');
     }
 
     try {
       const pr = await octokit.rest.pulls.get({
-        owner,
-        repo,
-        pull_number: pullNumber,
+        owner: org,
+        repo: repoName,
+        pull_number: prNumber,
       });
 
       const getCommits = async () => {
         try {
           const commits = await octokit.rest.pulls.listCommits({
-            owner,
-            repo,
-            pull_number: pullNumber,
+            owner: org,
+            repo: repoName,
+            pull_number: prNumber,
           });
 
           return commits.data.map((commit) => ({
@@ -63,7 +76,7 @@ export const getPRFactory: ApiFactory<
             url: commit.html_url,
           }));
         } catch (error) {
-          console.error(`Error fetching commits for PR #${pullNumber}:`, error);
+          console.error(`Error fetching commits for PR #${prNumber}:`, error);
           return [];
         }
       };
@@ -76,7 +89,7 @@ export const getPRFactory: ApiFactory<
         draft: pr.data.draft || false,
         mergedAt: pr.data.merged_at,
         number: pr.data.number,
-        repository: `${owner}/${repo}`,
+        repository: `${org}/${repoName}`,
         state: pr.data.state,
         title: pr.data.title,
         updatedAt: pr.data.updated_at,
