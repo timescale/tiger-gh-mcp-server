@@ -1,19 +1,12 @@
 import { Octokit } from '@octokit/rest';
-
-export interface CommitInfo {
-  author: string | null;
-  date: string | null;
-  message: string;
-  sha: string;
-  url: string;
-}
+import { Commit } from '../types.js';
 
 export async function getCommits(
   octokit: Octokit,
   owner: string,
   repo: string,
   pullNumber: number,
-): Promise<CommitInfo[]> {
+): Promise<Commit[]> {
   try {
     const commits = await octokit.rest.pulls.listCommits({
       owner,
