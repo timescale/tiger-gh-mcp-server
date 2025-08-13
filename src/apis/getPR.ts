@@ -4,18 +4,14 @@ import { ServerContext, zPullRequest } from '../types.js';
 import { parsePullRequestURL } from '../util/parsePullRequestURL.js';
 
 const inputSchema = {
-  url: z
-    .string()
-    .url()
-    .optional()
-    .describe('The GitHub pull request URL to fetch.'),
+  url: z.string().nullable().describe('The GitHub pull request URL to fetch.'),
   pullNumber: z
     .number()
-    .optional()
+    .nullable()
     .describe('The pull request number to fetch.'),
   repo: z
     .string()
-    .optional()
+    .nullable()
     .describe('The repository name when using pullNumber.'),
 } as const;
 
