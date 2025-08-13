@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ApiFactory } from '../shared/boilerplate/src/types.js';
 import { ServerContext, zPullRequest } from '../types.js';
 import { parsePullRequestURL } from '../util/parsePullRequestURL.js';
+import { getCommits } from '../util/getCommits.js';
 
 const inputSchema = {
   url: z.string().nullable().describe('The GitHub pull request URL to fetch.'),
@@ -13,6 +14,10 @@ const inputSchema = {
     .string()
     .nullable()
     .describe('The repository name when using pullNumber.'),
+  includeCommits: z
+    .boolean()
+    .optional()
+    .describe('If true, includes all commits for the pull request.'),
 } as const;
 
 const outputSchema = {
@@ -34,7 +39,7 @@ export const getPRFactory: ApiFactory<
     inputSchema,
     outputSchema,
   },
-  fn: async ({ url, pullNumber, repo }) => {
+  fn: async ({ url, pullNumber, repo, includeCommits }) => {
     let repoName: string;
     let prNumber: number;
 
@@ -56,27 +61,6 @@ export const getPRFactory: ApiFactory<
         pull_number: prNumber,
       });
 
-      const getCommits = async () => {
-        try {
-          const commits = await octokit.rest.pulls.listCommits({
-            owner: org,
-            repo: repoName,
-            pull_number: prNumber,
-          });
-
-          return commits.data.map((commit) => ({
-            author: commit.author?.login || null,
-            date: commit.commit.author?.date || null,
-            message: commit.commit.message,
-            sha: commit.sha,
-            url: commit.html_url,
-          }));
-        } catch (error) {
-          console.error(`Error fetching commits for PR #${prNumber}:`, error);
-          return [];
-        }
-      };
-
       const result = {
         author: pr.data.user?.login || 'unknown',
         closedAt: pr.data.closed_at,
@@ -90,7 +74,7 @@ export const getPRFactory: ApiFactory<
         title: pr.data.title,
         updatedAt: pr.data.updated_at,
         url: pr.data.html_url,
-        commits: await getCommits(),
+        commits: includeCommits ? await getCommits(octokit, org, repoName, prNumber) : undefined,
       };
 
       return { result };
