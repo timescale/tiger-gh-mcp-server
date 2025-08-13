@@ -1,6 +1,6 @@
 export interface ParsedPRInfo {
   repository: string;
-  pullRequestNumber: number;
+  pullNumber: number;
 }
 
 export function parsePullRequestURL(url: string): ParsedPRInfo {
@@ -11,8 +11,5 @@ export function parsePullRequestURL(url: string): ParsedPRInfo {
     throw new Error('Invalid GitHub PR URL format');
   }
 
-  const repoName = match[1];
-  const prNumber = parseInt(match[2], 10);
-
-  return { repository: repoName, pullRequestNumber: prNumber };
+  return { repository: match[1], pullNumber: parseInt(match[2], 10) };
 }

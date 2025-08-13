@@ -6,7 +6,7 @@ import { getCommits } from '../util/getCommits.js';
 
 const inputSchema = {
   url: z.string().nullable().describe('The GitHub pull request URL to fetch.'),
-  pullRequestNumber: z
+  pullNumber: z
     .number()
     .nullable()
     .describe('The pull request number to fetch.'),
@@ -41,7 +41,7 @@ export const getPRFactory: ApiFactory<
   },
   fn: async ({
     url,
-    pullRequestNumber: passedPullRequestNumber,
+    pullNumber: passedPullNumber,
     repository: passedRepository,
     includeCommits,
   }) => {
@@ -49,15 +49,10 @@ export const getPRFactory: ApiFactory<
     let pullNumber: number;
 
     if (url) {
-      const {
-        repository: parsedRepository,
-        pullRequestNumber: parsedPullRequestNumber,
-      } = parsePullRequestURL(url);
-      repository = parsedRepository;
-      pullNumber = parsedPullRequestNumber;
-    } else if (passedPullRequestNumber && passedRepository) {
+      ({ repository, pullNumber } = parsePullRequestURL(url));
+    } else if (passedPullNumber && passedRepository) {
       repository = passedRepository;
-      pullNumber = passedPullRequestNumber;
+      pullNumber = passedPullNumber;
     } else {
       throw new Error('Must provide either url or both pullNumber and repo');
     }
