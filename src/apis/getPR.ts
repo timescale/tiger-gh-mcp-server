@@ -5,18 +5,23 @@ import { parsePullRequestURL } from '../util/parsePullRequestURL.js';
 import { getCommits } from '../util/getCommits.js';
 
 const inputSchema = {
-  url: z.string().nullable().describe('The GitHub pull request URL to fetch.'),
+  url: z
+    .string()
+    .min(1)
+    .nullable()
+    .describe('The GitHub pull request URL to fetch.'),
   pullNumber: z
     .number()
+    .min(0)
     .nullable()
     .describe('The pull request number to fetch.'),
   repository: z
     .string()
+    .min(1)
     .nullable()
     .describe('The repository name when using pullNumber.'),
   includeCommits: z
     .boolean()
-    .nullable()
     .describe('If true, includes all commits for the pull request.'),
 } as const;
 
