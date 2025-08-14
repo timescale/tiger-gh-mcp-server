@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ApiFactory } from '../shared/boilerplate/src/types.js';
-import { ServerContext } from '../types.js';
+import { ServerContext, zPullRequest } from '../types.js';
 
 const inputSchema = {
   username: z
@@ -22,33 +22,7 @@ const inputSchema = {
 } as const;
 
 const outputSchema = {
-  results: z.array(
-    z.object({
-      author: z.string(),
-      closedAt: z.string().nullable(),
-      createdAt: z.string(),
-      description: z.string().nullable(),
-      draft: z.boolean(),
-      mergedAt: z.string().nullable(),
-      number: z.number(),
-      repository: z.string(),
-      state: z.string(),
-      title: z.string(),
-      updatedAt: z.string(),
-      url: z.string().url(),
-      commits: z
-        .array(
-          z.object({
-            author: z.string().nullable(),
-            date: z.string().nullable(),
-            message: z.string(),
-            sha: z.string(),
-            url: z.string().url(),
-          }),
-        )
-        .optional(),
-    }),
-  ),
+  results: z.array(zPullRequest),
 } as const;
 
 export const getRecentPRsInvolvingUserFactory: ApiFactory<
