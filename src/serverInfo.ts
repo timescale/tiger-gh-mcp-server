@@ -31,7 +31,7 @@ const octokit = new ThrottledOktokit({
       );
 
       if (options.request.retryCount <= NUMBER_OF_RETRIES) {
-        console.info(`Retrying after ${retryAfter} seconds`);
+        log.info(`Retrying after ${retryAfter} seconds`);
         return true;
       }
 
