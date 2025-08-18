@@ -1,6 +1,7 @@
 import { Octokit } from '@octokit/rest';
 import { ServerContext } from './types.js';
 import { throttling } from '@octokit/plugin-throttling';
+import { log } from './shared/boilerplate/src/logger.js';
 
 export const serverInfo = {
   name: 'tiger-gh',
@@ -25,7 +26,7 @@ const octokit = new ThrottledOktokit({
   auth: process.env.GITHUB_TOKEN,
   throttle: {
     onRateLimit: (retryAfter, options, _, retryCount) => {
-      console.warn(
+      log.warn(
         `Request quota exhausted for request ${options.method} ${options.url} (retryCount=${retryCount}), waiting ${retryAfter} seconds`,
       );
 
@@ -34,10 +35,10 @@ const octokit = new ThrottledOktokit({
         return true;
       }
 
-      console.warn(`Request failed after ${NUMBER_OF_RETRIES} retries`);
+      log.warn(`Request failed after ${NUMBER_OF_RETRIES} retries`);
     },
     onSecondaryRateLimit: (_, options) => {
-      console.warn(
+      log.error(
         `SecondaryRateLimit occurred for request ${options.method} ${options.url}`,
       );
     },
