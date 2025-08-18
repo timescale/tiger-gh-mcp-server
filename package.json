@@ -14,6 +14,7 @@
   ],
   "scripts": {
     "build": "tsc && shx chmod +x dist/*.js",
+    "dev:webhook": "tsx --watch src/webhookServer.ts",
     "prepare": "npm run build",
     "watch": "tsc --watch",
     "start": "node dist/index.js stdio",
@@ -24,6 +25,7 @@
     "@modelcontextprotocol/sdk": "^1.15.1",
     "@octokit/plugin-throttling": "^11.0.1",
     "@octokit/rest": "^22.0.0",
+    "@octokit/webhooks": "^14.1.3",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "^0.203.0",
     "@opentelemetry/auto-instrumentations-node": "^0.62.0",
@@ -38,6 +40,8 @@
     "@opentelemetry/sdk-trace-node": "^2.0.1",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
+    "kysely": "^0.28.5",
+    "pg": "^8.16.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -45,6 +49,7 @@
     "@types/node": "^22.16.4",
     "prettier": "^3.6.2",
     "shx": "^0.4.0",
+    "tsx": "^4.20.4",
     "typescript": "^5.8.3"
   }
 }
