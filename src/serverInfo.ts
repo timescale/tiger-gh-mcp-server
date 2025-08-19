@@ -40,7 +40,6 @@ const octokit = new ThrottledOktokit({
       log.warn(`Request failed after ${NUMBER_OF_RETRIES} retries`);
     },
     onSecondaryRateLimit: (_, options) => {
-      options.headers;
       log.error(
         `SecondaryRateLimit occurred for request ${options.method} ${options.url}`,
       );
