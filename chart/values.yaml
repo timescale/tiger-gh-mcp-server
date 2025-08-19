@@ -2,7 +2,7 @@ deployment:
   # NOTE: This value is set via the GitHub Actions deployment
   # workflow in github.com/timescale/cloud-actions.
   region: '-'
-name: 'tiger-gh-mcp-server'
+name: tiger-gh-mcp-server
 
 imageTag: latest
 imageName: 142548018081.dkr.ecr.us-east-1.amazonaws.com/tiger-gh-mcp-server
