@@ -1,25 +1,11 @@
 import { z } from 'zod';
-import { ServerContext } from '../types.js';
+import { ServerContext, zUser } from '../types.js';
 import { ApiFactory } from '../shared/boilerplate/src/types.js';
 
 const inputSchema = {} as const;
 
 const outputSchema = {
-  results: z.array(
-    z.object({
-      email: z
-        .string()
-        .nullable()
-        .describe('The email account that is associated with the GitHub user.'),
-      id: z.number(),
-      username: z
-        .string()
-        .describe(
-          'This is the GitHub "login" field, which is the official handle of the user.',
-        ),
-      fullName: z.string().nullable().describe('The full name of the user.'),
-    }),
-  ),
+  results: z.array(zUser),
 } as const;
 
 export const getUsersFactory: ApiFactory<
