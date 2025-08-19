@@ -1,7 +1,9 @@
 import { Octokit } from '@octokit/rest';
-import { ServerContext } from './types.js';
+import { ServerContext, User } from './types.js';
 import { throttling } from '@octokit/plugin-throttling';
 import { log } from './shared/boilerplate/src/logger.js';
+import { Store } from './util/store.js';
+import { getUsers } from './util/getUsers.js';
 
 export const serverInfo = {
   name: 'tiger-gh',
@@ -38,6 +40,7 @@ const octokit = new ThrottledOktokit({
       log.warn(`Request failed after ${NUMBER_OF_RETRIES} retries`);
     },
     onSecondaryRateLimit: (_, options) => {
+      options.headers;
       log.error(
         `SecondaryRateLimit occurred for request ${options.method} ${options.url}`,
       );
@@ -45,4 +48,9 @@ const octokit = new ThrottledOktokit({
   },
 });
 
-export const context: ServerContext = { octokit, org };
+const usersStore = new Store<User[]>({
+  fetch: () => getUsers(octokit, org),
+  fetchOnInit: true,
+});
+
+export const context: ServerContext = { octokit, org, usersStore };

@@ -1,5 +1,6 @@
 import { Octokit } from '@octokit/rest';
 import { z } from 'zod';
+import { Store } from './util/store.js';
 
 export const zCommit = z.object({
   author: z.string().nullable(),
@@ -46,4 +47,5 @@ export type User = z.infer<typeof zUser>;
 export interface ServerContext extends Record<string, unknown> {
   octokit: Octokit;
   org: string;
+  usersStore: Store<User[]>;
 }
