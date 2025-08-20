@@ -33,30 +33,11 @@
       }
     },
     {
-      "type": "npm",
-      "script": "start:http",
-      "group": "test",
-      "label": "npm: start:http",
-      "detail": "Start the HTTP server",
-      "dependsOn": "npm: build",
-      "isBackground": true,
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Debug Github MCP - Full Setup",
+      "label": "Debug Github MCP - Build Only",
       "dependsOrder": "sequence",
       "dependsOn": [
         "npm: install",
-        "npm: build",
-        "npm: start:http"
+        "npm: build"
       ],
       "group": "build"
     }
