@@ -10,6 +10,11 @@ export const serverInfo = {
   version: '1.0.0',
 } as const;
 
+const MAX_SECONDARY_RETRY_TIMEOUT_IN_SECONDS = process.env
+  .MAX_SECONDARY_RETRY_TIMEOUT_IN_SECONDS
+  ? parseInt(process.env.MAX_SECONDARY_RETRY_TIMEOUT_IN_SECONDS)
+  : 5;
+
 const org = process.env.GITHUB_ORG;
 if (!org) {
   throw new Error('GITHUB_ORG environment variable is required.');
@@ -27,22 +32,30 @@ const NUMBER_OF_RETRIES = process.env.GITHUB_REQUEST_RETRIES
 const octokit = new ThrottledOktokit({
   auth: process.env.GITHUB_TOKEN,
   throttle: {
-    onRateLimit: (retryAfter, options, _, retryCount) => {
+    onRateLimit: (retryAfterSeconds, options, _, retryCount) => {
       log.warn(
-        `Request quota exhausted for request ${options.method} ${options.url} (retryCount=${retryCount}), waiting ${retryAfter} seconds`,
+        `Request quota exhausted for request ${options.method} ${options.url} (retryCount=${retryCount}), waiting ${retryAfterSeconds} seconds`,
       );
 
       if (options.request.retryCount <= NUMBER_OF_RETRIES) {
-        log.info(`Retrying after ${retryAfter} seconds`);
+        log.info(`Retrying after ${retryAfterSeconds} seconds`);
         return true;
       }
 
       log.warn(`Request failed after ${NUMBER_OF_RETRIES} retries`);
     },
-    onSecondaryRateLimit: (_, options) => {
-      log.error(
-        `SecondaryRateLimit occurred for request ${options.method} ${options.url}`,
-      );
+    onSecondaryRateLimit: (retryAfterSeconds, { url, method }) => {
+      const shouldRetry =
+        retryAfterSeconds <= MAX_SECONDARY_RETRY_TIMEOUT_IN_SECONDS;
+
+      log.warn('SecondaryRateLimit occurred for request', {
+        method,
+        url,
+        retryAfterSeconds,
+        shouldRetry,
+      });
+
+      return shouldRetry;
     },
   },
 });
