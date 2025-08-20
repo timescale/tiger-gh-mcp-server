@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ApiFactory } from '../shared/boilerplate/src/types.js';
-import { ServerContext, zPullRequest, zPullRequestWithComments } from '../types.js';
+import { ServerContext, zPullRequestWithComments } from '../types.js';
 import { parsePullRequestURL } from '../util/parsePullRequestURL.js';
 import { getCommits } from '../util/getCommits.js';
 import { getPullRequestComments } from '../util/getPullRequestComments.js';
@@ -33,12 +33,12 @@ const outputSchema = {
   result: zPullRequestWithComments,
 } as const;
 
-export const getPRFactory: ApiFactory<
+export const getPullRequestFactory: ApiFactory<
   ServerContext,
   typeof inputSchema,
   typeof outputSchema
 > = ({ octokit, org }) => ({
-  name: 'getPR',
+  name: 'getPullRequest',
   method: 'get',
   route: '/pr',
   config: {
