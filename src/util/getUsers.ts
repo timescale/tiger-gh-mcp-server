@@ -3,6 +3,7 @@ import { User } from '../types.js';
 import { log } from '../shared/boilerplate/src/logger.js';
 
 const getUsers = async (octokit: Octokit, org: string): Promise<User[]> => {
+  log.info('Fetching members within organization', { org });
   const users = await octokit.paginate(octokit.rest.orgs.listMembers, {
     org: org,
     per_page: 100,
@@ -21,7 +22,10 @@ const getUsers = async (octokit: Octokit, org: string): Promise<User[]> => {
           fullName: userDetails.data.name || null,
         };
       } catch (error) {
-        console.error(`Error fetching details for user ${user.login}:`, error);
+        log.error(
+          `Error fetching details for user ${user.login}:`,
+          error as Error,
+        );
         return {
           email: null,
           id: user.id,
@@ -32,7 +36,7 @@ const getUsers = async (octokit: Octokit, org: string): Promise<User[]> => {
     }),
   );
 
-  log.info(`Fetched ${userList.length} users`);
+  log.info('Fetched users', { org, usersCount: userList.length });
   return userList;
 };
 

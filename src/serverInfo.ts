@@ -49,7 +49,8 @@ const octokit = new ThrottledOktokit({
 
 const usersStore = new Store<User[]>({
   fetch: () => getUsers(octokit, org),
-  fetchOnInit: true,
 });
+
+usersStore.get().catch((e) => log.error('Failed to fetch users on init', e));
 
 export const context: ServerContext = { octokit, org, usersStore };

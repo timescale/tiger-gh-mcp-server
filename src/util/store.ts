@@ -1,7 +1,6 @@
 interface StoreProps<T> {
   contents?: T;
   fetch: () => Promise<T>;
-  fetchOnInit?: boolean;
 }
 
 export class Store<T> {
