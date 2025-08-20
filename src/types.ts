@@ -44,6 +44,28 @@ export const zUser = z.object({
 
 export type User = z.infer<typeof zUser>;
 
+export const zPullRequestComment = z.object({
+  url: z.string().url().describe('URL for the pull request review comment'),
+  id: z.number().describe('The ID of the pull request review comment.'),
+  inReployToCommentId: z
+    .number()
+    .optional()
+    .describe('The ID of the comment that this comment is a reply to.'),
+  body: z.string().describe('The text of the comment.'),
+  createdAt: z.string().describe('The creation date of the comment.'),
+});
+
+export type PullRequestComment = z.infer<typeof zPullRequestComment>;
+
+export const zPullRequestWithComments = zPullRequest.extend({
+  comments: z
+    .array(zPullRequestComment)
+    .optional()
+    .describe('Pull request review comments'),
+});
+
+export type PullRequestWithComments = z.infer<typeof zPullRequestWithComments>;
+
 export interface ServerContext extends Record<string, unknown> {
   octokit: Octokit;
   org: string;

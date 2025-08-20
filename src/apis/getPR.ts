@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { ApiFactory } from '../shared/boilerplate/src/types.js';
-import { ServerContext, zPullRequest } from '../types.js';
+import { ServerContext, zPullRequest, zPullRequestWithComments } from '../types.js';
 import { parsePullRequestURL } from '../util/parsePullRequestURL.js';
 import { getCommits } from '../util/getCommits.js';
+import { getPullRequestComments } from '../util/getPullRequestComments.js';
 
 const inputSchema = {
   url: z
@@ -23,10 +24,13 @@ const inputSchema = {
   includeCommits: z
     .boolean()
     .describe('If true, includes all commits for the pull request.'),
+  includeComments: z
+    .boolean()
+    .describe('If true, includes all review comments for the pull request.'),
 } as const;
 
 const outputSchema = {
-  result: zPullRequest,
+  result: zPullRequestWithComments,
 } as const;
 
 export const getPRFactory: ApiFactory<
@@ -49,6 +53,7 @@ export const getPRFactory: ApiFactory<
     pullNumber: passedPullNumber,
     repository: passedRepository,
     includeCommits,
+    includeComments,
   }) => {
     let repository: string;
     let pullNumber: number;
@@ -85,6 +90,9 @@ export const getPRFactory: ApiFactory<
         url: pr.data.html_url,
         commits: includeCommits
           ? await getCommits(octokit, org, repository, pullNumber)
+          : undefined,
+        comments: includeComments
+          ? await getPullRequestComments(octokit, owner, repository, pullNumber)
           : undefined,
       };
 
