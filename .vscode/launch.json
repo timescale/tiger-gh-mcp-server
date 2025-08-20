@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Github MCP",
+      "type": "node",
+      "request": "launch",
+      "preLaunchTask": "Debug Github MCP - Full Setup",
+      "program": "${workspaceFolder}/package.json",
+      "console": "integratedTerminal",
+      "presentation": {
+        "group": "mcp",
+        "order": 1
+      }
+    }
+  ]
+}
