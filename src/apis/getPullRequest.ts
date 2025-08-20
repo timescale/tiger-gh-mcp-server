@@ -88,12 +88,12 @@ export const getPullRequestFactory: ApiFactory<
         title: pr.data.title,
         updatedAt: pr.data.updated_at,
         url: pr.data.html_url,
-        commits: includeCommits
+        ...(includeCommits
           ? await getCommits(octokit, org, repository, pullNumber)
-          : undefined,
-        comments: includeComments
+          : {}),
+        ...(includeComments
           ? await getPullRequestComments(octokit, owner, repository, pullNumber)
-          : undefined,
+          : {}),
       };
 
       return { result };
