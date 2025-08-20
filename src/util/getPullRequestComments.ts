@@ -20,7 +20,7 @@ export async function getPullRequestComments(
   return comments.map((comment) => ({
     url: comment.url,
     id: comment.id,
-    inReployToCommentId: comment.in_reply_to_id,
+    inReplyToCommentId: comment.in_reply_to_id,
     body: comment.body,
     userId: comment.user?.id,
     createdAt: comment.created_at,

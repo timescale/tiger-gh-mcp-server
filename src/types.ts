@@ -47,7 +47,7 @@ export type User = z.infer<typeof zUser>;
 export const zPullRequestComment = z.object({
   url: z.string().url().describe('URL for the pull request review comment'),
   id: z.number().describe('The ID of the pull request review comment.'),
-  inReployToCommentId: z
+  inReplyToCommentId: z
     .number()
     .optional()
     .describe('The ID of the comment that this comment is a reply to.'),
