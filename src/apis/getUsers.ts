@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ServerContext, User, zUser } from '../types.js';
+import { ServerContext, zUser } from '../types.js';
 import { ApiFactory } from '../shared/boilerplate/src/types.js';
 
 const inputSchema = {} as const;
