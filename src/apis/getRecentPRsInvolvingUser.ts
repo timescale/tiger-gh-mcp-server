@@ -30,7 +30,7 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
   typeof inputSchema,
   typeof outputSchema,
   z.infer<(typeof outputSchema)['results']>
-> = ({ octokit, org }) => ({
+> = ({ octokit, org, userStore }) => ({
   name: 'getRecentPRsInvolvingUser',
   method: 'get',
   route: '/recent-prs-involving-user',
@@ -54,6 +54,9 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
         sort: 'updated',
         order: 'desc',
       },
+    );
+    const user = await userStore.find(
+      (x) => x.username.toLowerCase() === username.toLowerCase(),
     );
 
     const getCommits = async (
@@ -97,6 +100,7 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
           title: pr.title,
           updatedAt: pr.updated_at,
           url: pr.html_url,
+          user,
           commits:
             includeAllCommits && pr.user?.login === username
               ? await getCommits(owner, repo, pr.number)

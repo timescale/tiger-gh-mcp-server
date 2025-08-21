@@ -12,22 +12,6 @@ export const zCommit = z.object({
 
 export type Commit = z.infer<typeof zCommit>;
 
-export const zPullRequest = z.object({
-  author: z.string(),
-  closedAt: z.string().nullable(),
-  createdAt: z.string(),
-  description: z.string().nullable(),
-  draft: z.boolean(),
-  mergedAt: z.string().nullable(),
-  number: z.number(),
-  repository: z.string(),
-  state: z.string(),
-  title: z.string(),
-  updatedAt: z.string(),
-  url: z.string().url(),
-  commits: z.array(zCommit).optional(),
-});
-
 export const zUser = z.object({
   email: z
     .string()
@@ -44,6 +28,23 @@ export const zUser = z.object({
 
 export type User = z.infer<typeof zUser>;
 
+export const zPullRequest = z.object({
+  author: z.string(),
+  closedAt: z.string().nullable(),
+  createdAt: z.string(),
+  description: z.string().nullable(),
+  draft: z.boolean(),
+  mergedAt: z.string().nullable(),
+  number: z.number(),
+  repository: z.string(),
+  state: z.string(),
+  title: z.string(),
+  updatedAt: z.string(),
+  user: zUser.nullable(),
+  url: z.string().url(),
+  commits: z.array(zCommit).optional(),
+});
+
 export const zPullRequestComment = z.object({
   url: z.string().url().describe('URL for the pull request review comment'),
   id: z.number().describe('The ID of the pull request review comment.'),
@@ -52,6 +53,10 @@ export const zPullRequestComment = z.object({
     .optional()
     .describe('The ID of the comment that this comment is a reply to.'),
   body: z.string().describe('The text of the comment.'),
+  userId: z
+    .number()
+    .optional()
+    .describe('The ID of the user who created the comment.'),
   createdAt: z.string().describe('The creation date of the comment.'),
 });
 
@@ -62,6 +67,12 @@ export const zPullRequestWithComments = zPullRequest.extend({
     .array(zPullRequestComment)
     .optional()
     .describe('Pull request review comments'),
+  involvedUsers: z
+    .array(zUser)
+    .optional()
+    .describe(
+      'A list of user metadata for each user involved with conversations.',
+    ),
 });
 
 export type PullRequestWithComments = z.infer<typeof zPullRequestWithComments>;
@@ -69,5 +80,5 @@ export type PullRequestWithComments = z.infer<typeof zPullRequestWithComments>;
 export interface ServerContext extends Record<string, unknown> {
   octokit: Octokit;
   org: string;
-  usersStore: Store<User[]>;
+  userStore: Store<User>;
 }

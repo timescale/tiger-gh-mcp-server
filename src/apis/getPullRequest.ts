@@ -37,7 +37,7 @@ export const getPullRequestFactory: ApiFactory<
   ServerContext,
   typeof inputSchema,
   typeof outputSchema
-> = ({ octokit, org }) => ({
+> = ({ octokit, org, userStore }) => ({
   name: 'getPullRequest',
   method: 'get',
   route: '/pr',
@@ -75,6 +75,8 @@ export const getPullRequestFactory: ApiFactory<
         pull_number: pullNumber,
       });
 
+      const user = await userStore.find((x) => x.id === pr.data.user.id);
+
       const result = {
         author: pr.data.user?.login || 'unknown',
         closedAt: pr.data.closed_at,
@@ -87,12 +89,19 @@ export const getPullRequestFactory: ApiFactory<
         state: pr.data.state,
         title: pr.data.title,
         updatedAt: pr.data.updated_at,
+        user,
         url: pr.data.html_url,
         ...(includeCommits
-          ? await getCommits(octokit, org, repository, pullNumber)
+          ? { commits: await getCommits(octokit, org, repository, pullNumber) }
           : {}),
         ...(includeComments
-          ? await getPullRequestComments(octokit, owner, repository, pullNumber)
+          ? await getPullRequestComments({
+              octokit,
+              owner,
+              repository,
+              pullNumber,
+              userStore,
+            })
           : {}),
       };
 
