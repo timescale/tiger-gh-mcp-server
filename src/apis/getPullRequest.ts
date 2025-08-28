@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { ApiFactory } from '../shared/boilerplate/src/types.js';
-import { ServerContext, zPullRequest } from '../types.js';
+import { ServerContext, zPullRequestWithComments } from '../types.js';
 import { parsePullRequestURL } from '../util/parsePullRequestURL.js';
 import { getCommits } from '../util/getCommits.js';
+import { getPullRequestComments } from '../util/getPullRequestComments.js';
 
 const inputSchema = {
   url: z
@@ -23,18 +24,21 @@ const inputSchema = {
   includeCommits: z
     .boolean()
     .describe('If true, includes all commits for the pull request.'),
+  includeComments: z
+    .boolean()
+    .describe('If true, includes all review comments for the pull request.'),
 } as const;
 
 const outputSchema = {
-  result: zPullRequest,
+  result: zPullRequestWithComments,
 } as const;
 
-export const getPRFactory: ApiFactory<
+export const getPullRequestFactory: ApiFactory<
   ServerContext,
   typeof inputSchema,
   typeof outputSchema
-> = ({ octokit, org }) => ({
-  name: 'getPR',
+> = ({ octokit, org, userStore }) => ({
+  name: 'getPullRequest',
   method: 'get',
   route: '/pr',
   config: {
@@ -49,6 +53,7 @@ export const getPRFactory: ApiFactory<
     pullNumber: passedPullNumber,
     repository: passedRepository,
     includeCommits,
+    includeComments,
   }) => {
     let repository: string;
     let pullNumber: number;
@@ -70,6 +75,8 @@ export const getPRFactory: ApiFactory<
         pull_number: pullNumber,
       });
 
+      const user = await userStore.find((x) => x.id === pr.data.user.id);
+
       const result = {
         author: pr.data.user?.login || 'unknown',
         closedAt: pr.data.closed_at,
@@ -82,10 +89,20 @@ export const getPRFactory: ApiFactory<
         state: pr.data.state,
         title: pr.data.title,
         updatedAt: pr.data.updated_at,
+        user,
         url: pr.data.html_url,
-        commits: includeCommits
-          ? await getCommits(octokit, org, repository, pullNumber)
-          : undefined,
+        ...(includeCommits
+          ? { commits: await getCommits(octokit, org, repository, pullNumber) }
+          : {}),
+        ...(includeComments
+          ? await getPullRequestComments({
+              octokit,
+              owner,
+              repository,
+              pullNumber,
+              userStore,
+            })
+          : {}),
       };
 
       return { result };

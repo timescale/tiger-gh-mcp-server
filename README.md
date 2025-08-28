@@ -38,6 +38,21 @@ cp .env.sample .env
 
 Then update the `GITHUB_TOKEN` value in `.env`.
 
+### VS Code Debugging
+
+The project includes a VS Code debug profile called "Debug Github MCP" that:
+1. Installs dependencies (`npm i`)
+2. Builds the project (`npm run build`)
+3. Launches the server in HTTP mode with full debugging support
+
+To use it:
+- Open the project in VS Code
+- Go to the Debug panel (Ctrl/Cmd + Shift + D)
+- Select "Debug Github MCP" from the dropdown
+- Press F5 or click the play button
+
+Breakpoints will work properly in TypeScript source files thanks to source map support.
+
 ### Testing
 
 The MCP Inspector is very handy.
