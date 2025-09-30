@@ -38,7 +38,7 @@ export const getPullRequestFactory: ApiFactory<
   typeof inputSchema,
   typeof outputSchema
 > = ({ octokit, org, userStore }) => ({
-  name: 'getPullRequest',
+  name: 'get_pull_request',
   method: 'get',
   route: '/pr',
   config: {

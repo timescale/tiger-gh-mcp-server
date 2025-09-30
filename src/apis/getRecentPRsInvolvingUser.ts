@@ -31,7 +31,7 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
   typeof outputSchema,
   z.infer<(typeof outputSchema)['results']>
 > = ({ octokit, org, userStore }) => ({
-  name: 'getRecentPRsInvolvingUser',
+  name: 'get_recent_prs_involving_user',
   method: 'get',
   route: '/recent-prs-involving-user',
   config: {

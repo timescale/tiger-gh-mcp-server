@@ -14,7 +14,7 @@ export const getUsersFactory: ApiFactory<
   typeof outputSchema,
   z.infer<(typeof outputSchema)['results']>
 > = ({ userStore }) => ({
-  name: 'getUsers',
+  name: 'get_users',
   method: 'get',
   route: '/users',
   config: {
