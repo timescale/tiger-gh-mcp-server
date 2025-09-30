@@ -32,7 +32,7 @@ export const getRecentCommitsFactory: ApiFactory<
   typeof outputSchema,
   z.infer<(typeof outputSchema)['results']>
 > = ({ octokit, org }) => ({
-  name: 'getRecentCommits',
+  name: 'get_recent_commits',
   method: 'get',
   route: '/recent-commits',
   config: {
