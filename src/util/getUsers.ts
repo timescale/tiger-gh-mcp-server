@@ -1,6 +1,6 @@
 import { Octokit } from '@octokit/rest';
+import { log } from '@tigerdata/mcp-boilerplate';
 import { User } from '../types.js';
-import { log } from '../shared/boilerplate/src/logger.js';
 
 const getUsers = async (octokit: Octokit, org: string): Promise<User[]> => {
   log.info('Fetching members within organization', { org });
