@@ -41,7 +41,7 @@ Breakpoints will work properly in TypeScript source files thanks to source map s
 
 ### Testing
 
-The MCP Inspector is very handy.
+The MCP Inspector is a very handy to exercise the MCP server from a web-based UI.
 
 ```bash
 npx @modelcontextprotocol/inspector
@@ -71,30 +71,3 @@ Create/edit the file `~/Library/Application Support/Claude/claude_desktop_config
   }
 }
 ```
-
-## Deployment
-
-We use a Helm chart to deploy to Kubernetes. See the `chart/` directory for details.
-
-### Secrets
-
-Run the following to create a sealed secret for the GitHub credentials. Be sure to fill in the correct values.
-
-```bash
-kubectl -n savannah-system create secret generic tiger-gh-mcp-server-github \
-  --dry-run=client \
-  --from-literal=token="ghp_abc123" \
-  -o yaml | kubeseal -o yaml
-
-kubectl -n savannah-system create secret generic tiger-gh-mcp-server-logfire \
-  --dry-run=client \
-  --from-literal=token="pylf_v1_us_" \
-  -o yaml | kubeseal -o yaml
-
-kubectl -n savannah-system create secret generic tiger-gh-mcp-server-tailscale \
-  --dry-run=client \
-  --from-literal=authkey="tskey-auth-" \
-  -o yaml | kubeseal -o yaml
-```
-
-Update `./chart/values/dev.yaml` with the output.
