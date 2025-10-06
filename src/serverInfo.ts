@@ -1,7 +1,7 @@
-import { Octokit } from '@octokit/rest';
-import { ServerContext, User } from './types.js';
 import { throttling } from '@octokit/plugin-throttling';
-import { log } from './shared/boilerplate/src/logger.js';
+import { Octokit } from '@octokit/rest';
+import { log } from '@tigerdata/mcp-boilerplate';
+import { ServerContext, User } from './types.js';
 import { Store } from './util/store.js';
 import { getUsers } from './util/getUsers.js';
 

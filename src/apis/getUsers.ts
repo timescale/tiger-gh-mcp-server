@@ -1,6 +1,6 @@
+import { ApiFactory } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import { ServerContext, zUser } from '../types.js';
-import { ApiFactory } from '../shared/boilerplate/src/types.js';
 
 const inputSchema = {} as const;
 

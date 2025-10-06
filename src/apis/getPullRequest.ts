@@ -1,5 +1,5 @@
+import { ApiFactory } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
-import { ApiFactory } from '../shared/boilerplate/src/types.js';
 import { ServerContext, zPullRequestWithComments } from '../types.js';
 import { parsePullRequestURL } from '../util/parsePullRequestURL.js';
 import { getCommits } from '../util/getCommits.js';
