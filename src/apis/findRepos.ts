@@ -10,7 +10,7 @@ const inputSchema = {
 } as const;
 
 const outputSchema = {
-  repository: z.array(
+  results: z.array(
     z.object({
       name: z.string(),
       description: z.string(),
@@ -43,8 +43,8 @@ When referring to a result, always provide a link to the \`url\` field so the us
     });
 
     return {
-      repository: response.data.items.map((item) => ({
-        name: item.name,
+      results: response.data.items.map((item) => ({
+        name: `${org}/${item.name}`,
         description: item.description || '',
         url: item.html_url,
       })),
