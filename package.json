@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@octokit/plugin-throttling": "^11.0.1",
-    "@octokit/rest": "^22.0.0",
+    "@octokit/rest": "^22.0.1",
     "@tigerdata/mcp-boilerplate": "^0.4.0",
     "dotenv": "^17.2.0",
     "zod": "^3.23.8"
