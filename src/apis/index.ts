@@ -4,6 +4,7 @@ import { getUsersFactory } from './getUsers.js';
 import { getPullRequestFactory } from './getPullRequest.js';
 import { searchRepoCode } from './searchRepoCode.js';
 import { findRepos } from './findRepos.js';
+import { getReleasesFactory } from './getReleases.js';
 
 export const apiFactories = [
   findRepos,
@@ -12,4 +13,5 @@ export const apiFactories = [
   getUsersFactory,
   getPullRequestFactory,
   searchRepoCode,
+  getReleasesFactory,
 ] as const;
