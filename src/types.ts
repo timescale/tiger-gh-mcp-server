@@ -77,6 +77,31 @@ export const zPullRequestWithComments = zPullRequest.extend({
 
 export type PullRequestWithComments = z.infer<typeof zPullRequestWithComments>;
 
+export const zRelease = z.object({
+  repository: z.string(),
+  tagName: z.string(),
+  name: z.string().nullable(),
+  body: z.string().nullable(),
+  url: z.string().url(),
+  publishedAt: z.string().nullable(),
+  createdAt: z.string(),
+  author: z.string().nullable(),
+  prerelease: z.boolean(),
+  draft: z.boolean(),
+  assets: z
+    .array(
+      z.object({
+        name: z.string(),
+        downloadUrl: z.string().url(),
+        size: z.number(),
+        downloadCount: z.number(),
+      }),
+    )
+    .optional(),
+});
+
+export type Release = z.infer<typeof zRelease>;
+
 export interface ServerContext extends Record<string, unknown> {
   octokit: Octokit;
   org: string;

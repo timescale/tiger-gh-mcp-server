@@ -1,15 +1,18 @@
 import { ApiFactory } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import { ServerContext } from '../types.js';
+import {
+  DEFAULT_SINCE_INTERVAL_IN_DAYS,
+  getDefaultSince,
+} from '../util/date.js';
 
 const inputSchema = {
   username: z.string().describe('The GitHub username to fetch commits for.'),
-  since: z
-    .string()
-    .regex(/^(\d{4}-\d{2}-\d{2})?$/, 'Date must be in YYYY-MM-DD format')
-    .optional()
+  since: z.coerce
+    .date()
+    .nullable()
     .describe(
-      'Fetch commits since this date (YYYY-MM-DD). Defaults to 7 days ago.',
+      `Fetch commits since this date. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
     ),
 } as const;
 
@@ -43,12 +46,9 @@ export const getRecentCommitsFactory: ApiFactory<
     outputSchema,
   },
   fn: async ({ username, since }) => {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const sinceDate = since || oneWeekAgo.toISOString().split('T')[0];
-
+    const sinceToUse = since || getDefaultSince();
     const rawCommits = await octokit.paginate(octokit.rest.search.commits, {
-      q: `author:${username}${org ? ` org:${org}` : ''} author-date:>=${sinceDate}`,
+      q: `author:${username}${org ? ` org:${org}` : ''} author-date:>=${sinceToUse.toISOString()}`,
       sort: 'author-date',
       order: 'desc',
     });

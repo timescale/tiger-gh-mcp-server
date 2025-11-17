@@ -1,17 +1,20 @@
 import { ApiFactory } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import { ServerContext, zPullRequest } from '../types.js';
+import {
+  DEFAULT_SINCE_INTERVAL_IN_DAYS,
+  getDefaultSince,
+} from '../util/date.js';
 
 const inputSchema = {
   username: z
     .string()
     .describe('The GitHub username to fetch pull requests for.'),
-  since: z
-    .string()
-    .regex(/^(\d{4}-\d{2}-\d{2})?$/, 'Date must be in YYYY-MM-DD format')
-    .optional()
+  since: z.coerce
+    .date()
+    .nullable()
     .describe(
-      'Fetch PRs updated since this date (YYYY-MM-DD). Defaults to 7 days ago.',
+      `Fetch PRs updated since this date. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
     ),
   includeAllCommits: z
     .boolean()
@@ -42,15 +45,12 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
     outputSchema,
   },
   fn: async ({ username, since, includeAllCommits }) => {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const updatedSince = since || oneWeekAgo.toISOString().split('T')[0];
-
+    const sinceToUse = since || getDefaultSince();
     const rawPRs = await octokit.paginate(
       octokit.rest.search.issuesAndPullRequests,
       {
         advanced_search: 'true',
-        q: `is:pr involves:${username}${org ? ` org:${org}` : ''} updated:>=${updatedSince}`,
+        q: `is:pr involves:${username}${org ? ` org:${org}` : ''} updated:>=${sinceToUse.toISOString()}`,
         sort: 'updated',
         order: 'desc',
       },
