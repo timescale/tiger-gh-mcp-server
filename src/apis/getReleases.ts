@@ -36,7 +36,7 @@ const inputSchema = {
   since: z.coerce
     .date()
     .nullable()
-    .describe('Fetch releases since this date. Will default to 1 week ago.'),
+    .describe('Fetch releases since this date. Defaults to 1 week ago.'),
 } as const;
 
 const outputSchema = {
