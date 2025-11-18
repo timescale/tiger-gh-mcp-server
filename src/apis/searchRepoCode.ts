@@ -1,4 +1,4 @@
-import { ApiFactory } from '@tigerdata/mcp-boilerplate';
+import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import { ServerContext } from '../types.js';
 
@@ -54,7 +54,10 @@ When referring to a result, always provide a link to the \`url\` field so the us
     inputSchema,
     outputSchema,
   },
-  fn: async ({ repository: passedRepository, searchTerm }) => {
+  fn: async ({
+    repository: passedRepository,
+    searchTerm,
+  }): Promise<InferSchema<typeof outputSchema>> => {
     const parts = passedRepository.split('/');
     const owner = parts.at(-2) || org;
     const repo = parts.at(-1);

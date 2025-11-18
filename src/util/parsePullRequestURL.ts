@@ -5,7 +5,7 @@ export interface ParsedPRInfo {
 }
 
 export function parsePullRequestURL(url: string): ParsedPRInfo {
-  const prRegex = /github\.com\/([^\/]+)\/([^\/]+)\/pull\/(\d+)/;
+  const prRegex = /github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/;
   const match = url.match(prRegex);
 
   if (!match) {

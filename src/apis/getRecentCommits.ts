@@ -1,4 +1,4 @@
-import { ApiFactory } from '@tigerdata/mcp-boilerplate';
+import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import { ServerContext } from '../types.js';
 import {
@@ -45,7 +45,10 @@ export const getRecentCommitsFactory: ApiFactory<
     inputSchema,
     outputSchema,
   },
-  fn: async ({ username, since }) => {
+  fn: async ({
+    username,
+    since,
+  }): Promise<InferSchema<typeof outputSchema>> => {
     const sinceToUse = since || getDefaultSince();
     const rawCommits = await octokit.paginate(octokit.rest.search.commits, {
       q: `author:${username}${org ? ` org:${org}` : ''} author-date:>=${sinceToUse.toISOString()}`,

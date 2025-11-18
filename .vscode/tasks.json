@@ -35,10 +35,7 @@
     {
       "label": "Debug Github MCP - Build Only",
       "dependsOrder": "sequence",
-      "dependsOn": [
-        "npm: install",
-        "npm: build"
-      ],
+      "dependsOn": ["npm: install", "npm: build"],
       "group": "build"
     }
   ]

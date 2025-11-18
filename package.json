@@ -19,21 +19,28 @@
     "watch:http": "tsx watch src/index.ts http",
     "start": "node dist/index.js stdio",
     "start:http": "node dist/index.js http",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "prettier:check": "prettier --check .",
+    "prettier:write": "prettier --write .",
     "inspector": "npx @modelcontextprotocol/inspector"
   },
   "dependencies": {
-    "@octokit/plugin-throttling": "^11.0.1",
+    "@octokit/plugin-throttling": "^11.0.3",
     "@octokit/rest": "^22.0.1",
-    "@tigerdata/mcp-boilerplate": "^0.4.0",
-    "dotenv": "^17.2.0",
-    "zod": "^3.23.8"
+    "@tigerdata/mcp-boilerplate": "^0.7.0",
+    "dotenv": "^17.2.3",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@types/node": "^22.16.4",
-    "ai": "^5.0.17",
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^22.19.1",
+    "ai": "^5.0.94",
+    "eslint": "^9.39.1",
     "prettier": "^3.6.2",
     "shx": "^0.4.0",
     "tsx": "^4.20.6",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.47.0"
   }
 }

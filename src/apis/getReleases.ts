@@ -1,4 +1,4 @@
-import { ApiFactory } from '@tigerdata/mcp-boilerplate';
+import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import { Release, ServerContext, zRelease } from '../types.js';
 import { getDefaultSince } from '../util/date.js';
@@ -66,7 +66,7 @@ export const getReleasesFactory: ApiFactory<
     includeDraft = false,
     includePrerelease = false,
     since,
-  }) => {
+  }): Promise<InferSchema<typeof outputSchema>> => {
     const allReleases = [];
 
     const limitToUse = limit || DEFAULT_LIMIT;

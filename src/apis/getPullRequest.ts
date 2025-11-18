@@ -1,4 +1,4 @@
-import { ApiFactory } from '@tigerdata/mcp-boilerplate';
+import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import { ServerContext, zPullRequestWithComments } from '../types.js';
 import { parsePullRequestURL } from '../util/parsePullRequestURL.js';
@@ -54,7 +54,7 @@ export const getPullRequestFactory: ApiFactory<
     repository: passedRepository,
     includeCommits,
     includeComments,
-  }) => {
+  }): Promise<InferSchema<typeof outputSchema>> => {
     let repository: string;
     let pullNumber: number;
     let owner = org;

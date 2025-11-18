@@ -1,6 +1,6 @@
-import { ApiFactory } from '@tigerdata/mcp-boilerplate';
+import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
-import { ServerContext, zPullRequest } from '../types.js';
+import { Commit, ServerContext, zPullRequest } from '../types.js';
 import {
   DEFAULT_SINCE_INTERVAL_IN_DAYS,
   getDefaultSince,
@@ -18,7 +18,6 @@ const inputSchema = {
     ),
   includeAllCommits: z
     .boolean()
-    .optional()
     .describe(
       'If true, includes all commits for each pull request in the results.',
     ),
@@ -44,7 +43,11 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
     inputSchema,
     outputSchema,
   },
-  fn: async ({ username, since, includeAllCommits }) => {
+  fn: async ({
+    username,
+    since,
+    includeAllCommits,
+  }): Promise<InferSchema<typeof outputSchema>> => {
     const sinceToUse = since || getDefaultSince();
     const rawPRs = await octokit.paginate(
       octokit.rest.search.issuesAndPullRequests,
@@ -63,7 +66,7 @@ export const getRecentPRsInvolvingUserFactory: ApiFactory<
       owner: string,
       repo: string,
       pullNumber: number,
-    ) => {
+    ): Promise<Commit[]> => {
       try {
         const commits = await octokit.rest.pulls.listCommits({
           owner,
