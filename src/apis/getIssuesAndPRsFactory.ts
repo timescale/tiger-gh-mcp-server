@@ -13,16 +13,18 @@ import {
 } from '../util/date.js';
 import { getCommits } from '../util/getCommits.js';
 import { isIssue, isPullRequest } from '../util/entityTypes.js';
+import { extractOwnerAndRepo } from '../util/repoName.js';
 
 const inputSchema = {
-  username: z
+  usernameFilter: z
     .string()
-    .describe('The GitHub username to fetch pull requests for.'),
+    .describe('The GitHub username to limit search to.'),
+  repositoryFilter: z.string().describe('The repository to limit search to.'),
   since: z.coerce
     .date()
     .nullable()
     .describe(
-      `Fetch PRs updated since this date. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
+      `Limit search to activity that occurred after this date. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
     ),
   includeAllCommits: z
     .boolean()
@@ -37,7 +39,7 @@ const inputSchema = {
     .describe('If true, includes relevant issues for the user.'),
   includePullRequests: z
     .boolean()
-    .describe('If true, includes relevant pull requests for the user.'),
+    .describe('If true, includes relevant pull reqests for the user.'),
 } as const;
 
 const outputSchema = {
@@ -45,23 +47,24 @@ const outputSchema = {
   pullRequests: z.array(zPullRequest).nullable(),
 } as const;
 
-export const getIssuesAndPRsInvolvingUserFactory: ApiFactory<
+export const getIssuesAndPRsFactory: ApiFactory<
   ServerContext,
   typeof inputSchema,
   typeof outputSchema
 > = ({ octokit, org, userStore }) => ({
-  name: 'get_issues_and_prs_involving_user',
+  name: 'get_issues_and_prs',
   method: 'get',
-  route: '/issues-and-prs-involving-user',
+  route: '/issues-and-prs',
   config: {
-    title: 'Get Recent Issues and/or PRs for User',
+    title: 'Get Recent Issues and/or PRs for organization, repo, or user.',
     description:
-      'Fetches recent pull requests and/or issues for a specific user in the configured GitHub organization.',
+      'Fetches recent pull requests and/or issues. By default, will return organization-wide results. Specifying a username or repository will limit the results accordingly.',
     inputSchema,
     outputSchema,
   },
   fn: async ({
-    username,
+    usernameFilter,
+    repositoryFilter,
     since,
     includeAllCommits,
     includeIssues,
@@ -78,17 +81,21 @@ export const getIssuesAndPRsInvolvingUserFactory: ApiFactory<
           ? 'is:issue'
           : 'is:pr';
 
+    const repoFilter = repositoryFilter
+      ? `repo:${extractOwnerAndRepo(repositoryFilter, org).ownerAndRepo}`
+      : null;
+
     const rawPRsAndIssues = await octokit.paginate(
       octokit.rest.search.issuesAndPullRequests,
       {
         advanced_search: 'true',
-        q: `${isClause ? `${isClause} ` : ''}involves:${username}${org ? ` org:${org}` : ''} updated:>=${sinceToUse.toISOString()}`,
+        q: `${isClause ? `${isClause} ` : ''}${repoFilter ? `${repoFilter} ` : ''}involves:${usernameFilter}${org ? ` org:${org}` : ''} updated:>=${sinceToUse.toISOString()}`,
         sort: 'updated',
         order: 'desc',
       },
     );
     const user = await userStore.find(
-      (x) => x.username.toLowerCase() === username.toLowerCase(),
+      (x) => x.username.toLowerCase() === usernameFilter.toLowerCase(),
     );
 
     const result = rawPRsAndIssues.reduce<{
@@ -115,7 +122,7 @@ export const getIssuesAndPRsInvolvingUserFactory: ApiFactory<
               url: curr.html_url,
               user,
               commits:
-                includeAllCommits && curr.user?.login === username
+                includeAllCommits && curr.user?.login === usernameFilter
                   ? await getCommits(octokit, owner, repo, curr.number)
                   : undefined,
             };
