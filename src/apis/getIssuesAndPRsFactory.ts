@@ -18,8 +18,8 @@ import { extractOwnerAndRepo } from '../util/repoName.js';
 const inputSchema = {
   usernameFilter: z
     .string()
-    .describe('The GitHub username to limit search to.'),
-  repositoryFilter: z.string().describe('The repository to limit search to.'),
+    .describe('The GitHub username to search for. Uses GitHub\'s "involves:" search which includes issues/PRs the user created, commented on, or was mentioned in.'),
+  repositoryFilter: z.string().describe('The repository to limit search to (format: owner/repo or just repo-name if within the configured org).'),
   since: z.coerce
     .date()
     .nullable()
@@ -39,7 +39,7 @@ const inputSchema = {
     .describe('If true, includes relevant issues for the user.'),
   includePullRequests: z
     .boolean()
-    .describe('If true, includes relevant pull reqests for the user.'),
+    .describe('If true, includes relevant pull requests for the user.'),
 } as const;
 
 const outputSchema = {
