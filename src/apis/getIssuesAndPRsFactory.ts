@@ -59,7 +59,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
   ServerContext,
   typeof inputSchema,
   typeof outputSchema
-> = ({ octokit, org, userStore }) => ({
+> = ({ octokit, org }) => ({
   name: 'get_issues_and_prs',
   method: 'get',
   route: '/issues-and-prs',
@@ -113,18 +113,12 @@ export const getIssuesAndPRsFactory: ApiFactory<
       },
     );
 
-    const userStoreInst = await userStore.get();
     const result = rawPRsAndIssues.reduce<{
       issues: Issue[];
       pullRequestPromises: Promise<PullRequest>[];
     }>(
       (acc, curr) => {
         const [owner, repo] = curr.repository_url.split('/').slice(-2);
-
-        const user =
-          userStoreInst.find(
-            (x) => x.username.toLowerCase() === curr.user?.login.toLowerCase(),
-          ) || null;
 
         if (isPullRequest(curr)) {
           const getPullRequest = async (): Promise<PullRequest> => {
@@ -141,7 +135,6 @@ export const getIssuesAndPRsFactory: ApiFactory<
               title: curr.title,
               updatedAt: curr.updated_at,
               url: curr.html_url,
-              user,
               commits:
                 includeAllCommits && curr.user?.login === username
                   ? await getCommits(octokit, owner, repo, curr.number)
@@ -166,7 +159,6 @@ export const getIssuesAndPRsFactory: ApiFactory<
             title: curr.title,
             updatedAt: curr.updated_at,
             url: curr.html_url,
-            user,
           });
         } else {
           log.warn(

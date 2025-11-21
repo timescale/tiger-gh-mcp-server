@@ -31,14 +31,13 @@ export type User = z.infer<typeof zUser>;
 const zPullRequestAndIssueCommonFields = z.object({
   closedAt: z.string().nullable(),
   createdAt: z.string(),
-  description: z.string().nullable(), // use body
+  description: z.string().nullable(), // maps to body
   number: z.number(),
   repository: z.string(),
   state: z.string(),
   title: z.string(),
   updatedAt: z.string(),
-  url: z.string().url(), // use html_url
-  user: zUser.nullable(),
+  url: z.string().url(), // maps to html_url
 });
 
 export const zPullRequest = zPullRequestAndIssueCommonFields.extend({

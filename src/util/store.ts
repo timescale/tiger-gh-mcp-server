@@ -21,4 +21,9 @@ export class Store<T> {
     const items = await this.get();
     return items.find(predicate) ?? null;
   }
+
+  async filter(predicate: (item: T) => boolean): Promise<T[] | null> {
+    const items = await this.get();
+    return items.filter(predicate) ?? null;
+  }
 }
