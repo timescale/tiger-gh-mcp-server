@@ -142,7 +142,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
               url: curr.html_url,
               user,
               commits:
-                includeAllCommits && curr.user?.login === usernameFilter
+                includeAllCommits && curr.user?.login === username
                   ? await getCommits(octokit, owner, repo, curr.number)
                   : undefined,
             };
