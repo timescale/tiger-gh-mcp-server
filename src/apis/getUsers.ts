@@ -39,7 +39,7 @@ export const getUsersFactory: ApiFactory<
       : await userStore.get();
 
     return {
-      results: users || [],
+      results: users,
     };
   },
   pickResult: (r) => r.results,
