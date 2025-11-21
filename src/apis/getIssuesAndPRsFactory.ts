@@ -89,7 +89,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
 
     const usernameFilter = username ? `involves:${username}` : null;
 
-    const queryParts = [
+    const query = [
       includeIssues && includePullRequests
         ? null
         : includeIssues
@@ -100,9 +100,10 @@ export const getIssuesAndPRsFactory: ApiFactory<
       !repoFilter && org ? `org:${org}` : null,
       includeClosed ? null : 'is:open',
       `updated:>=${sinceToUse.toISOString()}`,
-    ];
+    ]
+      .filter((x) => !!x)
+      .join(' ');
 
-    const query = queryParts.filter((x) => !!x).join(' ');
     const rawPRsAndIssues = await octokit.paginate(
       octokit.rest.search.issuesAndPullRequests,
       {
