@@ -13,13 +13,21 @@ import {
 } from '../util/date.js';
 import { getCommits } from '../util/getCommits.js';
 import { isIssue, isPullRequest } from '../util/entityTypes.js';
-import { extractOwnerAndRepo } from '../util/repoName.js';
+import { extractOwnerAndRepo } from '../util/string.js';
 
 const inputSchema = {
-  usernameFilter: z
+  username: z
     .string()
-    .describe('The GitHub username to search for. Uses GitHub\'s "involves:" search which includes issues/PRs the user created, commented on, or was mentioned in.'),
-  repositoryFilter: z.string().describe('The repository to limit search to (format: owner/repo or just repo-name if within the configured org).'),
+    .nullable()
+    .describe(
+      'Limit the search to this particular GitHub username. If specified, will only return PRs and/or issues that involve specified username. Uses GitHub\'s "involves:" search which includes issues/PRs the user created, commented on, or was mentioned in.',
+    ),
+  repository: z
+    .string()
+    .nullable()
+    .describe(
+      'The repository to limit search to (format: owner/repo or just repo-name if within the configured org). If specified, will only return PRs and/or issues that are within specified repository.',
+    ),
   since: z.coerce
     .date()
     .nullable()
@@ -63,10 +71,11 @@ export const getIssuesAndPRsFactory: ApiFactory<
     outputSchema,
   },
   fn: async ({
-    usernameFilter,
-    repositoryFilter,
+    username,
+    repository,
     since,
     includeAllCommits,
+    includeClosed,
     includeIssues,
     includePullRequests,
   }): Promise<InferSchema<typeof outputSchema>> => {
@@ -74,36 +83,47 @@ export const getIssuesAndPRsFactory: ApiFactory<
       return { issues: null, pullRequests: null };
     const sinceToUse = since || getDefaultSince();
 
-    const isClause =
+    const repoFilter = repository
+      ? `repo:${extractOwnerAndRepo(repository, org).ownerAndRepo}`
+      : null;
+
+    const usernameFilter = username ? `involves:${username}` : null;
+
+    const queryParts = [
       includeIssues && includePullRequests
         ? null
         : includeIssues
           ? 'is:issue'
-          : 'is:pr';
+          : 'is:pr',
+      repoFilter,
+      usernameFilter,
+      !repoFilter && org ? `org:${org}` : null,
+      includeClosed ? null : 'is:open',
+      `updated:>=${sinceToUse.toISOString()}`,
+    ];
 
-    const repoFilter = repositoryFilter
-      ? `repo:${extractOwnerAndRepo(repositoryFilter, org).ownerAndRepo}`
-      : null;
-
+    const query = queryParts.filter((x) => !!x).join(' ');
     const rawPRsAndIssues = await octokit.paginate(
       octokit.rest.search.issuesAndPullRequests,
       {
-        advanced_search: 'true',
-        q: `${isClause ? `${isClause} ` : ''}${repoFilter ? `${repoFilter} ` : ''}involves:${usernameFilter}${org ? ` org:${org}` : ''} updated:>=${sinceToUse.toISOString()}`,
+        q: query,
         sort: 'updated',
         order: 'desc',
       },
     );
-    const user = await userStore.find(
-      (x) => x.username.toLowerCase() === usernameFilter.toLowerCase(),
-    );
 
+    const userStoreInst = await userStore.get();
     const result = rawPRsAndIssues.reduce<{
       issues: Issue[];
       pullRequestPromises: Promise<PullRequest>[];
     }>(
       (acc, curr) => {
         const [owner, repo] = curr.repository_url.split('/').slice(-2);
+
+        const user =
+          userStoreInst.find(
+            (x) => x.username.toLowerCase() === curr.user?.login.toLowerCase(),
+          ) || null;
 
         if (isPullRequest(curr)) {
           const getPullRequest = async (): Promise<PullRequest> => {

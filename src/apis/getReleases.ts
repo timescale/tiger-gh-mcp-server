@@ -2,7 +2,7 @@ import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import { Release, ServerContext, zRelease } from '../types.js';
 import { getDefaultSince } from '../util/date.js';
-import { extractOwnerAndRepo } from '../util/repoName.js';
+import { extractOwnerAndRepo } from '../util/string.js';
 
 const DEFAULT_LIMIT = 10;
 const GH_MAX_RELEASES_PER_PAGE = 100;
