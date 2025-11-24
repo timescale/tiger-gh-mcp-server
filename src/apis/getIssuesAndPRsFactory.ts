@@ -13,7 +13,7 @@ import {
 } from '../util/date.js';
 import { getCommits } from '../util/getCommits.js';
 import { isIssue, isPullRequest } from '../util/entityTypes.js';
-import { extractOwnerAndRepo } from '../util/string.js';
+import { extractOwnerAndRepo, getRepositoryName } from '../util/string.js';
 
 const inputSchema = {
   username: z
@@ -130,7 +130,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
               draft: curr.draft || false,
               mergedAt: curr.pull_request?.merged_at || null,
               number: curr.number,
-              repository: curr.repository_url.split('/').slice(-2).join('/'),
+              repository: getRepositoryName(curr.repository_url),
               state: curr.state,
               title: curr.title,
               updatedAt: curr.updated_at,
@@ -154,7 +154,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
             createdAt: curr.created_at,
             description: curr.body || null,
             number: curr.number,
-            repository: curr.repository_url.split('/').slice(-2).join('/'),
+            repository: getRepositoryName(curr.repository_url),
             state: curr.state,
             title: curr.title,
             updatedAt: curr.updated_at,
