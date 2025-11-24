@@ -7,7 +7,7 @@ const inputSchema = {
     .string()
     .nullable()
     .describe(
-      'Filters by username (GitHub `login` field). This will match on any user whose login/username includes the given username.',
+      'Filters by username (GitHub `login` field). This will match on any user whose login/username includes the given string.',
     ),
 } as const;
 
