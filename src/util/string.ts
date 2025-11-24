@@ -2,14 +2,12 @@ export const extractOwnerAndRepo = (
   repoAndMaybeOwner: string,
   defaultOwner: string,
 ): { owner: string; repoName: string; ownerAndRepo: string } => {
-  if (repoAndMaybeOwner.includes('/')) {
-    const [owner, repoName] = repoAndMaybeOwner.split('/', 2);
-
-    return { owner, repoName, ownerAndRepo: `${owner}/${repoName}` };
-  }
+  const [a, b] = repoAndMaybeOwner.split('/', 2);
+  const owner = b ? a : defaultOwner;
+  const repoName = b || a;
   return {
-    repoName: repoAndMaybeOwner,
-    owner: defaultOwner,
-    ownerAndRepo: `${defaultOwner}/${repoAndMaybeOwner}`,
+    owner,
+    repoName,
+    ownerAndRepo: `${owner}/${repoName}`,
   };
 };
