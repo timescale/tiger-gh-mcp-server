@@ -54,7 +54,7 @@ export const zIssue = zPullRequestAndIssueCommonFields.extend({
     .string()
     .nullish()
     .describe('The GitHub username for the assignee'),
-  assignees: z.array(zUser).nullable(),
+  assignees: z.array(z.string()).nullish(),
 });
 
 export type Issue = z.infer<typeof zIssue>;
