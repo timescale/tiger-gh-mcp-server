@@ -58,6 +58,7 @@ const outputSchema = {
   pullRequests: z.array(zPullRequest).nullable(),
   usersInvolved: z
     .record(z.string(), zUser)
+    .nullish()
     .describe(
       'Map of user IDs to user objects for all users mentioned in issues and PRs',
     ),
@@ -88,7 +89,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
     includePullRequests,
   }): Promise<InferSchema<typeof outputSchema>> => {
     if (!includeIssues && !includePullRequests)
-      return { issues: null, pullRequests: null, users: {} };
+      return { issues: null, pullRequests: null, usersInvolved: null };
     const sinceToUse = since || getDefaultSince();
 
     const repoFilter = repository
@@ -122,49 +123,44 @@ export const getIssuesAndPRsFactory: ApiFactory<
     );
 
     const usersInvolved: Record<string, User> = {};
-    const issuePromises: Issue[] = [];
-    const pullRequestPromises: Promise<PullRequest>[] = [];
+    const issues: Issue[] = [];
+    const pullRequests: PullRequest[] = [];
 
     for (const curr of rawPRsAndIssues) {
       const [owner, repo] = curr.repository_url.split('/').slice(-2);
 
       if (isPullRequest(curr)) {
         const currentUsername = curr.user?.login;
+        if (!!currentUsername && !usersInvolved[currentUsername]) {
+          const user = await getUser({
+            octokit,
+            username: currentUsername,
+            userStore,
+          });
 
-        const getPullRequest = async (): Promise<PullRequest> => {
-          if (!!currentUsername && !usersInvolved[currentUsername]) {
-            const user = await getUser({
-              octokit,
-              username: currentUsername,
-              userStore,
-            });
-
-            if (user) {
-              usersInvolved[currentUsername] = user;
-            }
+          if (user) {
+            usersInvolved[currentUsername] = user;
           }
+        }
 
-          return {
-            author: currentUsername || 'unknown',
-            closedAt: curr.closed_at,
-            createdAt: curr.created_at,
-            description: curr.body || null,
-            draft: curr.draft || false,
-            mergedAt: curr.pull_request?.merged_at || null,
-            number: curr.number,
-            repository: getRepositoryName(curr.repository_url),
-            state: curr.state,
-            title: curr.title,
-            updatedAt: curr.updated_at,
-            url: curr.html_url,
-            commits:
-              includeAllCommits && curr.user?.login === username
-                ? await getCommits(octokit, owner, repo, curr.number)
-                : undefined,
-          };
-        };
-
-        pullRequestPromises.push(getPullRequest());
+        pullRequests.push({
+          author: currentUsername || 'unknown',
+          closedAt: curr.closed_at,
+          createdAt: curr.created_at,
+          description: curr.body || null,
+          draft: curr.draft || false,
+          mergedAt: curr.pull_request?.merged_at || null,
+          number: curr.number,
+          repository: getRepositoryName(curr.repository_url),
+          state: curr.state,
+          title: curr.title,
+          updatedAt: curr.updated_at,
+          url: curr.html_url,
+          commits:
+            includeAllCommits && curr.user?.login === username
+              ? await getCommits(octokit, owner, repo, curr.number)
+              : undefined,
+        });
       } else if (isIssue(curr)) {
         const currentUsername = curr.assignee?.login;
         if (!!currentUsername && !usersInvolved[currentUsername]) {
@@ -179,7 +175,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
           }
         }
 
-        issuePromises.push({
+        issues.push({
           assignee: curr.assignee
             ? { id: curr.assignee.id, username: curr.assignee.login }
             : null,
@@ -203,11 +199,9 @@ export const getIssuesAndPRsFactory: ApiFactory<
       }
     }
 
-    const pullRequests = await Promise.all(pullRequestPromises);
-
     return {
       pullRequests: includePullRequests ? pullRequests : null,
-      issues: includeIssues ? issuePromises : null,
+      issues: includeIssues ? issues : null,
       usersInvolved,
     };
   },
