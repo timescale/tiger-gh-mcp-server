@@ -54,11 +54,10 @@ const inputSchema = {
 } as const;
 
 const outputSchema = {
-  issues: z.array(zIssue).nullable(),
-  pullRequests: z.array(zPullRequest).nullable(),
+  issues: z.array(zIssue).optional(),
+  pullRequests: z.array(zPullRequest).optional(),
   usersInvolved: z
     .record(z.string(), zUser)
-    .nullish()
     .describe(
       'Map of user IDs to user objects for all users mentioned in issues and PRs',
     ),
@@ -89,7 +88,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
     includePullRequests,
   }): Promise<InferSchema<typeof outputSchema>> => {
     if (!includeIssues && !includePullRequests)
-      return { issues: null, pullRequests: null, usersInvolved: null };
+      throw new Error('Must use includeIssues and/or includePullRequests.');
     const sinceToUse = since || getDefaultSince();
 
     const repoFilter = repository
@@ -143,7 +142,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
     for (const curr of rawPRsAndIssues) {
       const [owner, repo] = curr.repository_url.split('/').slice(-2);
 
-      if (isPullRequest(curr)) {
+      if (includePullRequests && isPullRequest(curr)) {
         const currentUsername = curr.user?.login;
         await addInvolvedUser(currentUsername);
 
@@ -165,7 +164,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
               ? await getCommits(octokit, owner, repo, curr.number)
               : undefined,
         });
-      } else if (isIssue(curr)) {
+      } else if (includeIssues && isIssue(curr)) {
         const assigneeUsername = curr.assignee?.login;
         const authorUsername = curr.user?.login;
 
@@ -198,8 +197,8 @@ export const getIssuesAndPRsFactory: ApiFactory<
     }
 
     return {
-      pullRequests: includePullRequests ? pullRequests : null,
-      issues: includeIssues ? issues : null,
+      ...(includePullRequests ? { pullRequests } : {}),
+      ...(includeIssues ? { issues } : {}),
       usersInvolved,
     };
   },
