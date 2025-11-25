@@ -2,7 +2,14 @@ import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import { ServerContext, zUser } from '../types.js';
 
-const inputSchema = {} as const;
+const inputSchema = {
+  username: z
+    .string()
+    .nullable()
+    .describe(
+      'Filters by username (GitHub `login` field). This will match on any user whose login/username includes the given string.',
+    ),
+} as const;
 
 const outputSchema = {
   results: z.array(zUser),
@@ -24,8 +31,12 @@ export const getUsersFactory: ApiFactory<
     inputSchema,
     outputSchema,
   },
-  fn: async (): Promise<InferSchema<typeof outputSchema>> => {
-    const users = await userStore.get();
+  fn: async ({ username }): Promise<InferSchema<typeof outputSchema>> => {
+    const users = username
+      ? await userStore.filter((user) =>
+          user.username.toLowerCase().includes(username.toLowerCase()),
+        )
+      : await userStore.get();
 
     return {
       results: users,

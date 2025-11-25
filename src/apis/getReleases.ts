@@ -2,6 +2,7 @@ import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import { Release, ServerContext, zRelease } from '../types.js';
 import { getDefaultSince } from '../util/date.js';
+import { extractOwnerAndRepo } from '../util/string.js';
 
 const DEFAULT_LIMIT = 10;
 const GH_MAX_RELEASES_PER_PAGE = 100;
@@ -74,9 +75,7 @@ export const getReleasesFactory: ApiFactory<
 
     for (const repo of repositories) {
       try {
-        const [owner, repoName] = repo.includes('/')
-          ? repo.split('/', 2)
-          : [org, repo];
+        const { owner, repoName } = extractOwnerAndRepo(repo, org);
 
         const releases = await octokit.paginate(
           octokit.rest.repos.listReleases,
