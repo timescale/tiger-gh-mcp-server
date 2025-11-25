@@ -29,6 +29,7 @@ export const zUser = z.object({
 export type User = z.infer<typeof zUser>;
 
 const zPullRequestAndIssueCommonFields = z.object({
+  author: z.string(),
   closedAt: z.string().nullable(),
   createdAt: z.string(),
   description: z.string().nullable(), // maps to body
@@ -41,7 +42,6 @@ const zPullRequestAndIssueCommonFields = z.object({
 });
 
 export const zPullRequest = zPullRequestAndIssueCommonFields.extend({
-  author: z.string(),
   commits: z.array(zCommit).optional(),
   draft: z.boolean(),
   mergedAt: z.string().nullable(),
@@ -50,7 +50,10 @@ export const zPullRequest = zPullRequestAndIssueCommonFields.extend({
 export type PullRequest = z.infer<typeof zPullRequest>;
 
 export const zIssue = zPullRequestAndIssueCommonFields.extend({
-  assignee: zUser.nullable(),
+  assignee: z
+    .string()
+    .nullish()
+    .describe('The GitHub username for the assignee'),
   assignees: z.array(zUser).nullable(),
 });
 
