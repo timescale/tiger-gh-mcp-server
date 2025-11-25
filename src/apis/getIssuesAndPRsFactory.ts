@@ -4,8 +4,10 @@ import {
   Issue,
   PullRequest,
   ServerContext,
+  User,
   zIssue,
   zPullRequest,
+  zUser,
 } from '../types.js';
 import {
   DEFAULT_SINCE_INTERVAL_IN_DAYS,
@@ -14,6 +16,7 @@ import {
 import { getCommits } from '../util/getCommits.js';
 import { isIssue, isPullRequest } from '../util/entityTypes.js';
 import { extractOwnerAndRepo, getRepositoryName } from '../util/string.js';
+import { getUser } from '../util/getUser.js';
 
 const inputSchema = {
   username: z
@@ -53,13 +56,18 @@ const inputSchema = {
 const outputSchema = {
   issues: z.array(zIssue).nullable(),
   pullRequests: z.array(zPullRequest).nullable(),
+  usersInvolved: z
+    .record(z.string(), zUser)
+    .describe(
+      'Map of user IDs to user objects for all users mentioned in issues and PRs',
+    ),
 } as const;
 
 export const getIssuesAndPRsFactory: ApiFactory<
   ServerContext,
   typeof inputSchema,
   typeof outputSchema
-> = ({ octokit, org }) => ({
+> = ({ octokit, org, userStore }) => ({
   name: 'get_issues_and_prs',
   method: 'get',
   route: '/issues-and-prs',
@@ -80,7 +88,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
     includePullRequests,
   }): Promise<InferSchema<typeof outputSchema>> => {
     if (!includeIssues && !includePullRequests)
-      return { issues: null, pullRequests: null };
+      return { issues: null, pullRequests: null, users: {} };
     const sinceToUse = since || getDefaultSince();
 
     const repoFilter = repository
@@ -113,73 +121,94 @@ export const getIssuesAndPRsFactory: ApiFactory<
       },
     );
 
-    const result = rawPRsAndIssues.reduce<{
-      issues: Issue[];
-      pullRequestPromises: Promise<PullRequest>[];
-    }>(
-      (acc, curr) => {
-        const [owner, repo] = curr.repository_url.split('/').slice(-2);
+    const usersInvolved: Record<string, User> = {};
+    const issuePromises: Issue[] = [];
+    const pullRequestPromises: Promise<PullRequest>[] = [];
 
-        if (isPullRequest(curr)) {
-          const getPullRequest = async (): Promise<PullRequest> => {
-            return {
-              author: curr.user?.login || 'unknown',
-              closedAt: curr.closed_at,
-              createdAt: curr.created_at,
-              description: curr.body || null,
-              draft: curr.draft || false,
-              mergedAt: curr.pull_request?.merged_at || null,
-              number: curr.number,
-              repository: getRepositoryName(curr.repository_url),
-              state: curr.state,
-              title: curr.title,
-              updatedAt: curr.updated_at,
-              url: curr.html_url,
-              commits:
-                includeAllCommits && curr.user?.login === username
-                  ? await getCommits(octokit, owner, repo, curr.number)
-                  : undefined,
-            };
-          };
-          acc.pullRequestPromises.push(getPullRequest());
-        } else if (isIssue(curr)) {
-          acc.issues.push({
-            assignee: curr.assignee
-              ? { id: curr.assignee.id, username: curr.assignee.login }
-              : null,
-            assignees: curr.assignees
-              ? curr.assignees.map((x) => ({ id: x.id, username: x.login }))
-              : null,
+    for (const curr of rawPRsAndIssues) {
+      const [owner, repo] = curr.repository_url.split('/').slice(-2);
+
+      if (isPullRequest(curr)) {
+        const currentUsername = curr.user?.login;
+
+        const getPullRequest = async (): Promise<PullRequest> => {
+          if (!!currentUsername && !usersInvolved[currentUsername]) {
+            const user = await getUser({
+              octokit,
+              username: currentUsername,
+              userStore,
+            });
+
+            if (user) {
+              usersInvolved[currentUsername] = user;
+            }
+          }
+
+          return {
+            author: currentUsername || 'unknown',
             closedAt: curr.closed_at,
             createdAt: curr.created_at,
             description: curr.body || null,
+            draft: curr.draft || false,
+            mergedAt: curr.pull_request?.merged_at || null,
             number: curr.number,
             repository: getRepositoryName(curr.repository_url),
             state: curr.state,
             title: curr.title,
             updatedAt: curr.updated_at,
             url: curr.html_url,
+            commits:
+              includeAllCommits && curr.user?.login === username
+                ? await getCommits(octokit, owner, repo, curr.number)
+                : undefined,
+          };
+        };
+
+        pullRequestPromises.push(getPullRequest());
+      } else if (isIssue(curr)) {
+        const currentUsername = curr.assignee?.login;
+        if (!!currentUsername && !usersInvolved[currentUsername]) {
+          const user = await getUser({
+            octokit,
+            username: currentUsername,
+            userStore,
           });
-        } else {
-          log.warn(
-            'Could not classify item returned in issuesAndPullRequests',
-            { item: curr },
-          );
+
+          if (user) {
+            usersInvolved[currentUsername] = user;
+          }
         }
 
-        return acc;
-      },
-      {
-        issues: [],
-        pullRequestPromises: [],
-      },
-    );
+        issuePromises.push({
+          assignee: curr.assignee
+            ? { id: curr.assignee.id, username: curr.assignee.login }
+            : null,
+          assignees: curr.assignees
+            ? curr.assignees.map((x) => ({ id: x.id, username: x.login }))
+            : null,
+          closedAt: curr.closed_at,
+          createdAt: curr.created_at,
+          description: curr.body || null,
+          number: curr.number,
+          repository: getRepositoryName(curr.repository_url),
+          state: curr.state,
+          title: curr.title,
+          updatedAt: curr.updated_at,
+          url: curr.html_url,
+        });
+      } else {
+        log.warn('Could not classify item returned in issuesAndPullRequests', {
+          item: curr,
+        });
+      }
+    }
 
-    const pullRequests = await Promise.all(result.pullRequestPromises);
+    const pullRequests = await Promise.all(pullRequestPromises);
 
     return {
       pullRequests: includePullRequests ? pullRequests : null,
-      issues: includeIssues ? result.issues : null,
+      issues: includeIssues ? issuePromises : null,
+      usersInvolved,
     };
   },
 });

@@ -1,14 +1,25 @@
 import { Octokit } from '@octokit/rest';
 import { log } from '@tigerdata/mcp-boilerplate';
 import { User } from '../types.js';
+import { Store } from './store.js';
 
-const getUser = async (
-  octokit: Octokit,
-  username: string,
-): Promise<User | null> => {
+const getUser = async ({
+  octokit,
+  username,
+  userStore,
+}: {
+  octokit: Octokit;
+  username: string;
+  userStore?: Store<User>;
+}): Promise<User | null> => {
   log.info('Fetching member by username', { username });
 
   try {
+    const userInStore = await userStore?.find((x) => x.username === username);
+    if (userInStore) {
+      return userInStore;
+    }
+
     const userDetails = await octokit.rest.users.getByUsername({
       username,
     });

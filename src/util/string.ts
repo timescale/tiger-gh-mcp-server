@@ -11,3 +11,6 @@ export const extractOwnerAndRepo = (
     ownerAndRepo: `${owner}/${repoName}`,
   };
 };
+
+export const getRepositoryName = (repositoryUrl: string): string =>
+  repositoryUrl.split('/').slice(-2).join('/');

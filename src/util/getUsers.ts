@@ -11,7 +11,7 @@ const getUsers = async (octokit: Octokit, org: string): Promise<User[]> => {
   });
 
   const userList = await Promise.all(
-    users.map(async (user) => getUser(octokit, user.login)),
+    users.map(async (user) => getUser({ octokit, username: user.login })),
   );
 
   log.info('Fetched users', { org, usersCount: userList.length });
