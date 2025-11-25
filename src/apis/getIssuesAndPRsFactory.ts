@@ -172,12 +172,14 @@ export const getIssuesAndPRsFactory: ApiFactory<
         await addInvolvedUser(assigneeUsername);
         await addInvolvedUser(authorUsername);
 
+        for (const assignee of curr.assignees || []) {
+          await addInvolvedUser(assignee.login);
+        }
+
         issues.push({
           author: authorUsername || 'unknown',
           assignee: assigneeUsername,
-          assignees: curr.assignees
-            ? curr.assignees.map((x) => ({ id: x.id, username: x.login }))
-            : null,
+          assignees: curr.assignees ? curr.assignees.map((x) => x.login) : null,
           closedAt: curr.closed_at,
           createdAt: curr.created_at,
           description: curr.body || null,
