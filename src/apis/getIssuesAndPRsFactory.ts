@@ -126,22 +126,26 @@ export const getIssuesAndPRsFactory: ApiFactory<
     const issues: Issue[] = [];
     const pullRequests: PullRequest[] = [];
 
+    const addInvolvedUser = async (username?: string): Promise<void> => {
+      if (!!username && !usersInvolved[username]) {
+        const user = await getUser({
+          octokit,
+          username,
+          userStore,
+        });
+
+        if (user) {
+          usersInvolved[username] = user;
+        }
+      }
+    };
+
     for (const curr of rawPRsAndIssues) {
       const [owner, repo] = curr.repository_url.split('/').slice(-2);
 
       if (isPullRequest(curr)) {
         const currentUsername = curr.user?.login;
-        if (!!currentUsername && !usersInvolved[currentUsername]) {
-          const user = await getUser({
-            octokit,
-            username: currentUsername,
-            userStore,
-          });
-
-          if (user) {
-            usersInvolved[currentUsername] = user;
-          }
-        }
+        await addInvolvedUser(currentUsername);
 
         pullRequests.push({
           author: currentUsername || 'unknown',
@@ -162,26 +166,20 @@ export const getIssuesAndPRsFactory: ApiFactory<
               : undefined,
         });
       } else if (isIssue(curr)) {
-        const currentUsername = curr.assignee?.login;
-        if (!!currentUsername && !usersInvolved[currentUsername]) {
-          const user = await getUser({
-            octokit,
-            username: currentUsername,
-            userStore,
-          });
+        const assigneeUsername = curr.assignee?.login;
+        const authorUsername = curr.user?.login;
 
-          if (user) {
-            usersInvolved[currentUsername] = user;
-          }
+        await addInvolvedUser(assigneeUsername);
+        await addInvolvedUser(authorUsername);
+
+        for (const assignee of curr.assignees || []) {
+          await addInvolvedUser(assignee.login);
         }
 
         issues.push({
-          assignee: curr.assignee
-            ? { id: curr.assignee.id, username: curr.assignee.login }
-            : null,
-          assignees: curr.assignees
-            ? curr.assignees.map((x) => ({ id: x.id, username: x.login }))
-            : null,
+          author: authorUsername || 'unknown',
+          assignee: assigneeUsername,
+          assignees: curr.assignees ? curr.assignees.map((x) => x.login) : null,
           closedAt: curr.closed_at,
           createdAt: curr.created_at,
           description: curr.body || null,
