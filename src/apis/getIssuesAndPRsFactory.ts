@@ -126,22 +126,26 @@ export const getIssuesAndPRsFactory: ApiFactory<
     const issues: Issue[] = [];
     const pullRequests: PullRequest[] = [];
 
+    const addInvolvedUser = async (username?: string) => {
+      if (!!username && !usersInvolved[username]) {
+        const user = await getUser({
+          octokit,
+          username,
+          userStore,
+        });
+
+        if (user) {
+          usersInvolved[username] = user;
+        }
+      }
+    };
+
     for (const curr of rawPRsAndIssues) {
       const [owner, repo] = curr.repository_url.split('/').slice(-2);
 
       if (isPullRequest(curr)) {
         const currentUsername = curr.user?.login;
-        if (!!currentUsername && !usersInvolved[currentUsername]) {
-          const user = await getUser({
-            octokit,
-            username: currentUsername,
-            userStore,
-          });
-
-          if (user) {
-            usersInvolved[currentUsername] = user;
-          }
-        }
+        await addInvolvedUser(currentUsername);
 
         pullRequests.push({
           author: currentUsername || 'unknown',
@@ -162,18 +166,11 @@ export const getIssuesAndPRsFactory: ApiFactory<
               : undefined,
         });
       } else if (isIssue(curr)) {
-        const currentUsername = curr.assignee?.login;
-        if (!!currentUsername && !usersInvolved[currentUsername]) {
-          const user = await getUser({
-            octokit,
-            username: currentUsername,
-            userStore,
-          });
+        const assigneeUsername = curr.assignee?.login;
+        const authorUsername = curr.user?.login;
 
-          if (user) {
-            usersInvolved[currentUsername] = user;
-          }
-        }
+        await addInvolvedUser(assigneeUsername);
+        await addInvolvedUser(authorUsername);
 
         issues.push({
           assignee: curr.assignee
