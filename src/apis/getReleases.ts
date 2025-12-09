@@ -37,11 +37,15 @@ const inputSchema = {
   timestampStart: z.coerce
     .date()
     .nullable()
-    .describe('Optional start date for filtering releases. Defaults to 1 week ago.'),
+    .describe(
+      'Optional start date for filtering releases. Defaults to 1 week ago.',
+    ),
   timestampEnd: z.coerce
     .date()
     .nullable()
-    .describe('Optional end date for filtering releases. Defaults to the current time.'),
+    .describe(
+      'Optional end date for filtering releases. Defaults to the current time.',
+    ),
 } as const;
 
 const outputSchema = {
@@ -94,12 +98,15 @@ export const getReleasesFactory: ApiFactory<
         );
 
         const filteredReleases = releases.reduce<Release[]>((acc, curr) => {
-          const publishedDate = curr.published_at ? new Date(curr.published_at) : null;
+          const publishedDate = curr.published_at
+            ? new Date(curr.published_at)
+            : null;
           if (
             (!curr.draft || includeDraft) &&
             (!curr.prerelease || includePrerelease) &&
             (!publishedDate ||
-              (publishedDate >= timestampStartToUse && publishedDate <= timestampEndToUse))
+              (publishedDate >= timestampStartToUse &&
+                publishedDate <= timestampEndToUse))
           ) {
             const release = {
               repository: `${owner}/${repoName}`,
