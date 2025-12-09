@@ -31,11 +31,17 @@ const inputSchema = {
     .describe(
       'The repository to limit search to (format: owner/repo or just repo-name if within the configured org). If specified, will only return PRs and/or issues that are within specified repository.',
     ),
-  since: z.coerce
+  timestampStart: z.coerce
     .date()
     .nullable()
     .describe(
-      `Limit search to activity that occurred after this date. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
+      `Optional start date for filtering activity. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
+    ),
+  timestampEnd: z.coerce
+    .date()
+    .nullable()
+    .describe(
+      'Optional end date for filtering activity. Defaults to the current time.',
     ),
   includeAllCommits: z
     .boolean()
@@ -81,7 +87,8 @@ export const getIssuesAndPRsFactory: ApiFactory<
   fn: async ({
     username,
     repository,
-    since,
+    timestampStart,
+    timestampEnd,
     includeAllCommits,
     includeClosed,
     includeIssues,
@@ -89,7 +96,8 @@ export const getIssuesAndPRsFactory: ApiFactory<
   }): Promise<InferSchema<typeof outputSchema>> => {
     if (!includeIssues && !includePullRequests)
       throw new Error('Must use includeIssues and/or includePullRequests.');
-    const sinceToUse = since || getDefaultSince();
+    const timestampStartToUse = timestampStart || getDefaultSince();
+    const timestampEndToUse = timestampEnd || new Date();
 
     const repoFilter = repository
       ? `repo:${extractOwnerAndRepo(repository, org).ownerAndRepo}`
@@ -107,7 +115,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
       usernameFilter,
       !repoFilter && org ? `org:${org}` : null,
       includeClosed ? null : 'is:open',
-      `updated:>=${sinceToUse.toISOString()}`,
+      `updated:${timestampStartToUse.toISOString()}..${timestampEndToUse.toISOString()}`,
     ]
       .filter((x) => !!x)
       .join(' ');
@@ -125,7 +133,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
     const issues: Issue[] = [];
     const pullRequests: PullRequest[] = [];
 
-    const addInvolvedUser = async (username?: string): Promise<void> => {
+    const addInvolvedUser = async (username?: string) => {
       if (!!username && !usersInvolved[username]) {
         const user = await getUser({
           octokit,

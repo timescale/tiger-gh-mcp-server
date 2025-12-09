@@ -34,10 +34,14 @@ const inputSchema = {
   includePrerelease: z
     .boolean()
     .describe('Whether to include prerelease versions. Defaults to false.'),
-  since: z.coerce
+  timestampStart: z.coerce
     .date()
     .nullable()
-    .describe('Fetch releases since this date. Defaults to 1 week ago.'),
+    .describe('Optional start date for filtering releases. Defaults to 1 week ago.'),
+  timestampEnd: z.coerce
+    .date()
+    .nullable()
+    .describe('Optional end date for filtering releases. Defaults to the current time.'),
 } as const;
 
 const outputSchema = {
@@ -66,12 +70,14 @@ export const getReleasesFactory: ApiFactory<
     includeAssets,
     includeDraft = false,
     includePrerelease = false,
-    since,
+    timestampStart,
+    timestampEnd,
   }): Promise<InferSchema<typeof outputSchema>> => {
     const allReleases = [];
 
     const limitToUse = limit || DEFAULT_LIMIT;
-    const sinceToUse = since || getDefaultSince();
+    const timestampStartToUse = timestampStart || getDefaultSince();
+    const timestampEndToUse = timestampEnd || new Date();
 
     for (const repo of repositories) {
       try {
@@ -88,10 +94,12 @@ export const getReleasesFactory: ApiFactory<
         );
 
         const filteredReleases = releases.reduce<Release[]>((acc, curr) => {
+          const publishedDate = curr.published_at ? new Date(curr.published_at) : null;
           if (
             (!curr.draft || includeDraft) &&
             (!curr.prerelease || includePrerelease) &&
-            (!curr.published_at || new Date(curr.published_at) > sinceToUse)
+            (!publishedDate ||
+              (publishedDate >= timestampStartToUse && publishedDate <= timestampEndToUse))
           ) {
             const release = {
               repository: `${owner}/${repoName}`,

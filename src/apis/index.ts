@@ -1,15 +1,15 @@
-import { getRecentCommitsFactory } from './getRecentCommits.js';
+import { getCommitsFactory } from './getCommits.js';
 import { getUsersFactory } from './getUsers.js';
 import { getPullRequestFactory } from './getPullRequest.js';
 import { searchRepoCode } from './searchRepoCode.js';
 import { findRepos } from './findRepos.js';
 import { getReleasesFactory } from './getReleases.js';
-import { getIssuesAndPRsFactory } from './getIssuesAndPRsFactory.js';
+import { getIssuesAndPRsFactory } from './getIssuesAndPRs.js';
 
 export const apiFactories = [
   findRepos,
   getIssuesAndPRsFactory,
-  getRecentCommitsFactory,
+  getCommitsFactory,
   getUsersFactory,
   getPullRequestFactory,
   searchRepoCode,
