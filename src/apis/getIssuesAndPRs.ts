@@ -133,7 +133,7 @@ export const getIssuesAndPRsFactory: ApiFactory<
     const issues: Issue[] = [];
     const pullRequests: PullRequest[] = [];
 
-    const addInvolvedUser = async (username?: string) => {
+    const addInvolvedUser = async (username?: string): Promise<void> => {
       if (!!username && !usersInvolved[username]) {
         const user = await getUser({
           octokit,
