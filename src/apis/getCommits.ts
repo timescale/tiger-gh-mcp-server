@@ -8,11 +8,17 @@ import {
 
 const inputSchema = {
   username: z.string().describe('The GitHub username to fetch commits for.'),
-  since: z.coerce
+  timestampStart: z.coerce
     .date()
     .nullable()
     .describe(
-      `Fetch commits since this date. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
+      `Optional start date for filtering commits. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
+    ),
+  timestampEnd: z.coerce
+    .date()
+    .nullable()
+    .describe(
+      'Optional end date for filtering commits. Defaults to the current time.',
     ),
 } as const;
 
@@ -29,7 +35,7 @@ const outputSchema = {
   ),
 } as const;
 
-export const getRecentCommitsFactory: ApiFactory<
+export const getCommitsFactory: ApiFactory<
   ServerContext,
   typeof inputSchema,
   typeof outputSchema,
@@ -47,11 +53,13 @@ export const getRecentCommitsFactory: ApiFactory<
   },
   fn: async ({
     username,
-    since,
+    timestampStart,
+    timestampEnd,
   }): Promise<InferSchema<typeof outputSchema>> => {
-    const sinceToUse = since || getDefaultSince();
+    const timestampStartToUse = timestampStart || getDefaultSince();
+    const timestampEndToUse = timestampEnd || new Date();
     const rawCommits = await octokit.paginate(octokit.rest.search.commits, {
-      q: `author:${username}${org ? ` org:${org}` : ''} author-date:>=${sinceToUse.toISOString()}`,
+      q: `author:${username}${org ? ` org:${org}` : ''} author-date:${timestampStartToUse.toISOString()}..${timestampEndToUse.toISOString()}`,
       sort: 'author-date',
       order: 'desc',
     });
