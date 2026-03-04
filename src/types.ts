@@ -59,19 +59,24 @@ export const zIssue = zPullRequestAndIssueCommonFields.extend({
 
 export type Issue = z.infer<typeof zIssue>;
 
-export const zPullRequestComment = z.object({
+export const zIssueComment = z.object({
   url: z.string().url().describe('URL for the pull request review comment'),
   id: z.number().describe('The ID of the pull request review comment.'),
-  inReplyToCommentId: z
-    .number()
-    .optional()
-    .describe('The ID of the comment that this comment is a reply to.'),
-  body: z.string().describe('The text of the comment.'),
+  body: z.string().nullish().describe('The text of the comment.'),
   userId: z
     .number()
     .optional()
     .describe('The ID of the user who created the comment.'),
   createdAt: z.string().describe('The creation date of the comment.'),
+});
+
+export type IssueComment = z.infer<typeof zIssueComment>;
+
+export const zPullRequestComment = zIssueComment.extend({
+  inReplyToCommentId: z
+    .number()
+    .optional()
+    .describe('The ID of the comment that this comment is a reply to.'),
 });
 
 export type PullRequestComment = z.infer<typeof zPullRequestComment>;
@@ -90,6 +95,21 @@ export const zPullRequestWithComments = zPullRequest.extend({
 });
 
 export type PullRequestWithComments = z.infer<typeof zPullRequestWithComments>;
+
+export const zIssueWithComments = zIssue.extend({
+  comments: z
+    .array(zIssueComment)
+    .optional()
+    .describe('Comments on the issue'),
+  involvedUsers: z
+    .array(zUser)
+    .optional()
+    .describe(
+      'A list of user metadata for each user involved with conversations.',
+    ),
+});
+
+export type IssueWithComments = z.infer<typeof zIssueWithComments>;
 
 export const zRelease = z.object({
   repository: z.string(),

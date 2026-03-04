@@ -1,9 +1,9 @@
 import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import { ServerContext, zPullRequestWithComments } from '../types.js';
-import { parsePullRequestURL } from '../util/parsePullRequestURL.js';
+import { parseGitHubURL } from '../util/parsePullRequestURL.js';
 import { getCommits } from '../util/getCommits.js';
-import { getPullRequestComments } from '../util/getPullRequestComments.js';
+import { getPullRequestComments } from '../util/getComments.js';
 
 const inputSchema = {
   url: z
@@ -42,7 +42,7 @@ export const getPullRequestFactory: ApiFactory<
   method: 'get',
   route: '/pr',
   config: {
-    title: 'Get Pull Request',
+    title: 'Get Pull Request details',
     description:
       'Fetches a specific pull request by URL or pull number and repo.',
     inputSchema,
@@ -60,7 +60,7 @@ export const getPullRequestFactory: ApiFactory<
     let owner = org;
 
     if (url) {
-      ({ repository, pullNumber, owner } = parsePullRequestURL(url));
+      ({ repository, number: pullNumber, owner } = parseGitHubURL(url));
     } else if (passedPullNumber && passedRepository) {
       repository = passedRepository;
       pullNumber = passedPullNumber;

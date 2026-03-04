@@ -1,6 +1,7 @@
 import { getCommitsFactory } from './getCommits.js';
 import { getUsersFactory } from './getUsers.js';
 import { getPullRequestFactory } from './getPullRequest.js';
+import { getIssueFactory } from './getIssue.js';
 import { searchRepoCode } from './searchRepoCode.js';
 import { findRepos } from './findRepos.js';
 import { getReleasesFactory } from './getReleases.js';
@@ -12,6 +13,7 @@ export const apiFactories = [
   getCommitsFactory,
   getUsersFactory,
   getPullRequestFactory,
+  getIssueFactory,
   searchRepoCode,
   getReleasesFactory,
 ] as const;
