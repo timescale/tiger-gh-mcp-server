@@ -31,6 +31,10 @@ const inputSchema = {
     .describe(
       'The repository to limit search to (format: owner/repo or just repo-name if within the configured org). If specified, will only return PRs and/or issues that are within specified repository.',
     ),
+  searchTerm: z
+    .string()
+    .nullable()
+    .describe('Limit results to those that match the given keywords'),
   timestampStart: z.coerce
     .date()
     .nullable()
@@ -51,12 +55,10 @@ const inputSchema = {
   includeClosed: z
     .boolean()
     .describe('If true, will return PRs and/or issues that have been closed.'),
-  includeIssues: z
-    .boolean()
-    .describe('If true, includes relevant issues for the user.'),
+  includeIssues: z.boolean().describe('If true, will include relevant issues.'),
   includePullRequests: z
     .boolean()
-    .describe('If true, includes relevant pull requests for the user.'),
+    .describe('If true, will include relevant pull requests.'),
 } as const;
 
 const outputSchema = {
@@ -69,24 +71,25 @@ const outputSchema = {
     ),
 } as const;
 
-export const getIssuesAndPRsFactory: ApiFactory<
+export const searchIssuesAndPRsFactory: ApiFactory<
   ServerContext,
   typeof inputSchema,
   typeof outputSchema
 > = ({ octokit, org, userStore }) => ({
-  name: 'get_issues_and_prs',
+  name: 'search_issues_and_prs',
   method: 'get',
   route: '/issues-and-prs',
   config: {
-    title: 'Get Recent Issues and/or PRs for organization, repo, or user.',
+    title: 'Search Issues and/or PRs for organization, repo, or user.',
     description:
-      'Fetches recent pull requests and/or issues. By default, will return organization-wide results. Specifying a username or repository will limit the results accordingly.',
+      'Searches for pull requests and/or issues. By default, will return organization-wide results. Specifying a username or repository will limit the results accordingly.',
     inputSchema,
     outputSchema,
   },
   fn: async ({
     username,
     repository,
+    searchTerm,
     timestampStart,
     timestampEnd,
     includeAllCommits,
@@ -103,8 +106,6 @@ export const getIssuesAndPRsFactory: ApiFactory<
       ? `repo:${extractOwnerAndRepo(repository, org).ownerAndRepo}`
       : null;
 
-    const usernameFilter = username ? `involves:${username}` : null;
-
     const query = [
       includeIssues && includePullRequests
         ? null
@@ -112,9 +113,10 @@ export const getIssuesAndPRsFactory: ApiFactory<
           ? 'is:issue'
           : 'is:pr',
       repoFilter,
-      usernameFilter,
+      ...(username ? [`involves:${username}`] : []),
       !repoFilter && org ? `org:${org}` : null,
-      includeClosed ? null : 'is:open',
+      ...(searchTerm ? [searchTerm] : []),
+      ...(includeClosed ? [] : ['is:open']),
       `updated:${timestampStartToUse.toISOString()}..${timestampEndToUse.toISOString()}`,
     ]
       .filter((x) => !!x)
