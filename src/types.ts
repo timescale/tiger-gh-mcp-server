@@ -37,6 +37,7 @@ const zPullRequestAndIssueCommonFields = z.object({
   repository: z.string(),
   state: z.string(),
   title: z.string(),
+  user: zUser.nullish(),
   updatedAt: z.string(),
   url: z.string().url(), // maps to html_url
 });
