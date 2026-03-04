@@ -3,7 +3,11 @@ import { z } from 'zod';
 import { ServerContext, zPullRequestWithComments } from '../types.js';
 import { parseGitHubURL } from '../util/parsePullRequestURL.js';
 import { getCommits } from '../util/getCommits.js';
-import { getPullRequestComments } from '../util/getComments.js';
+import {
+  getComments,
+  getPullRequestComments,
+  resolveUsersFromComments,
+} from '../util/getComments.js';
 
 const inputSchema = {
   url: z
@@ -25,6 +29,9 @@ const inputSchema = {
     .boolean()
     .describe('If true, includes all commits for the pull request.'),
   includeComments: z
+    .boolean()
+    .describe('If true, includes comments on the pull request'),
+  includeReviewComments: z
     .boolean()
     .describe('If true, includes all review comments for the pull request.'),
 } as const;
@@ -54,6 +61,7 @@ export const getPullRequestFactory: ApiFactory<
     repository: passedRepository,
     includeCommits,
     includeComments,
+    includeReviewComments,
   }): Promise<InferSchema<typeof outputSchema>> => {
     let repository: string;
     let pullNumber: number;
@@ -77,6 +85,37 @@ export const getPullRequestFactory: ApiFactory<
 
       const user = await userStore.find((x) => x.id === pr.data.user.id);
 
+      const reviewComments = includeReviewComments
+        ? await getPullRequestComments({
+            octokit,
+            owner,
+            repository,
+            pullNumber,
+            userStore,
+          })
+        : null;
+
+      const comments = includeComments
+        ? await getComments({
+            octokit,
+            owner,
+            repository,
+            issueNumber: pullNumber,
+            userStore,
+          })
+        : null;
+
+      const { userMap } =
+        comments || reviewComments
+          ? await resolveUsersFromComments(
+              [
+                ...(comments ? comments : []),
+                ...(reviewComments ? reviewComments : []),
+              ],
+              userStore,
+            )
+          : { userMap: undefined };
+
       const result = {
         author: pr.data.user?.login || 'unknown',
         closedAt: pr.data.closed_at,
@@ -94,14 +133,12 @@ export const getPullRequestFactory: ApiFactory<
         ...(includeCommits
           ? { commits: await getCommits(octokit, org, repository, pullNumber) }
           : {}),
-        ...(includeComments
-          ? await getPullRequestComments({
-              octokit,
-              owner,
-              repository,
-              pullNumber,
-              userStore,
-            })
+        ...(reviewComments ? { reviewComments } : {}),
+        ...(comments ? { comments } : {}),
+        ...(userMap
+          ? {
+              involvedUsers: Array.from(userMap.values()),
+            }
           : {}),
       };
 

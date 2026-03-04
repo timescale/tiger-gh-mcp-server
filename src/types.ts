@@ -82,10 +82,14 @@ export const zPullRequestComment = zIssueComment.extend({
 export type PullRequestComment = z.infer<typeof zPullRequestComment>;
 
 export const zPullRequestWithComments = zPullRequest.extend({
-  comments: z
+  reviewComments: z
     .array(zPullRequestComment)
     .optional()
     .describe('Pull request review comments'),
+  comments: z
+    .array(zIssueComment)
+    .optional()
+    .describe('Standard comments on Pull Requests and Issues'),
   involvedUsers: z
     .array(zUser)
     .optional()
