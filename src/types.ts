@@ -97,10 +97,7 @@ export const zPullRequestWithComments = zPullRequest.extend({
 export type PullRequestWithComments = z.infer<typeof zPullRequestWithComments>;
 
 export const zIssueWithComments = zIssue.extend({
-  comments: z
-    .array(zIssueComment)
-    .optional()
-    .describe('Comments on the issue'),
+  comments: z.array(zIssueComment).optional().describe('Comments on the issue'),
   involvedUsers: z
     .array(zUser)
     .optional()
