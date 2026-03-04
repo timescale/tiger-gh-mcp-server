@@ -4,11 +4,11 @@ import { getPullRequestFactory } from './getPullRequest.js';
 import { searchRepoCode } from './searchRepoCode.js';
 import { findRepos } from './findRepos.js';
 import { getReleasesFactory } from './getReleases.js';
-import { getIssuesAndPRsFactory } from './getIssuesAndPRs.js';
+import { searchIssuesAndPRsFactory } from './searchIssuesAndPRs.js';
 
 export const apiFactories = [
   findRepos,
-  getIssuesAndPRsFactory,
+  searchIssuesAndPRsFactory,
   getCommitsFactory,
   getUsersFactory,
   getPullRequestFactory,
