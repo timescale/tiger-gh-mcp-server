@@ -1,13 +1,13 @@
-import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
+import type { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
-import { ServerContext, zPullRequestWithComments } from '../types.js';
-import { parseGitHubURL } from '../util/parsePullRequestURL.js';
-import { getCommits } from '../util/getCommits.js';
+import { type ServerContext, zPullRequestWithComments } from '../types.js';
 import {
   getComments,
   getPullRequestComments,
   resolveUsersFromComments,
 } from '../util/getComments.js';
+import { getCommits } from '../util/getCommits.js';
+import { parseGitHubURL } from '../util/parsePullRequestURL.js';
 
 const inputSchema = {
   url: z

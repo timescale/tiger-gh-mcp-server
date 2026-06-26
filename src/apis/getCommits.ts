@@ -1,24 +1,25 @@
-import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
+import type { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
-import { ServerContext } from '../types.js';
+import type { ServerContext } from '../types.js';
 import {
   DEFAULT_SINCE_INTERVAL_IN_DAYS,
   getDefaultSince,
+  parseTimestamp,
 } from '../util/date.js';
 
 const inputSchema = {
   username: z.string().describe('The GitHub username to fetch commits for.'),
-  timestampStart: z.coerce
-    .date()
+  timestampStart: z
+    .string()
     .nullable()
     .describe(
-      `Optional start date for filtering commits. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
+      `Optional start date (ISO 8601) for filtering commits. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
     ),
-  timestampEnd: z.coerce
-    .date()
+  timestampEnd: z
+    .string()
     .nullable()
     .describe(
-      'Optional end date for filtering commits. Defaults to the current time.',
+      'Optional end date (ISO 8601) for filtering commits. Defaults to the current time.',
     ),
 } as const;
 
@@ -56,8 +57,11 @@ export const getCommitsFactory: ApiFactory<
     timestampStart,
     timestampEnd,
   }): Promise<InferSchema<typeof outputSchema>> => {
-    const timestampStartToUse = timestampStart || getDefaultSince();
-    const timestampEndToUse = timestampEnd || new Date();
+    const timestampStartToUse = parseTimestamp(
+      timestampStart,
+      getDefaultSince(),
+    );
+    const timestampEndToUse = parseTimestamp(timestampEnd, new Date());
     const rawCommits = await octokit.paginate(octokit.rest.search.commits, {
       q: `author:${username}${org ? ` org:${org}` : ''} author-date:${timestampStartToUse.toISOString()}..${timestampEndToUse.toISOString()}`,
       sort: 'author-date',

@@ -1,6 +1,6 @@
-import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
+import type { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
-import { ServerContext, zIssueWithComments } from '../types.js';
+import { type ServerContext, zIssueWithComments } from '../types.js';
 import { getComments } from '../util/getComments.js';
 import { parseGitHubURL } from '../util/parsePullRequestURL.js';
 

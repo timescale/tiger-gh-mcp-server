@@ -1,10 +1,14 @@
-import { ApiFactory, InferSchema, log } from '@tigerdata/mcp-boilerplate';
+import {
+  type ApiFactory,
+  type InferSchema,
+  log,
+} from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import {
-  Issue,
-  PullRequest,
-  ServerContext,
-  User,
+  type Issue,
+  type PullRequest,
+  type ServerContext,
+  type User,
   zIssue,
   zPullRequest,
   zUser,
@@ -12,11 +16,12 @@ import {
 import {
   DEFAULT_SINCE_INTERVAL_IN_DAYS,
   getDefaultSince,
+  parseTimestamp,
 } from '../util/date.js';
-import { getCommits } from '../util/getCommits.js';
 import { isIssue, isPullRequest } from '../util/entityTypes.js';
-import { extractOwnerAndRepo, getRepositoryName } from '../util/string.js';
+import { getCommits } from '../util/getCommits.js';
 import { getUser } from '../util/getUser.js';
+import { extractOwnerAndRepo, getRepositoryName } from '../util/string.js';
 
 const inputSchema = {
   username: z
@@ -35,17 +40,17 @@ const inputSchema = {
     .string()
     .nullable()
     .describe('Limit results to those that match the given keywords'),
-  timestampStart: z.coerce
-    .date()
+  timestampStart: z
+    .string()
     .nullable()
     .describe(
-      `Optional start date for filtering activity. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
+      `Optional start date (ISO 8601) for filtering activity. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
     ),
-  timestampEnd: z.coerce
-    .date()
+  timestampEnd: z
+    .string()
     .nullable()
     .describe(
-      'Optional end date for filtering activity. Defaults to the current time.',
+      'Optional end date (ISO 8601) for filtering activity. Defaults to the current time.',
     ),
   includeAllCommits: z
     .boolean()
@@ -99,8 +104,11 @@ export const searchIssuesAndPRsFactory: ApiFactory<
   }): Promise<InferSchema<typeof outputSchema>> => {
     if (!includeIssues && !includePullRequests)
       throw new Error('Must use includeIssues and/or includePullRequests.');
-    const timestampStartToUse = timestampStart || getDefaultSince();
-    const timestampEndToUse = timestampEnd || new Date();
+    const timestampStartToUse = parseTimestamp(
+      timestampStart,
+      getDefaultSince(),
+    );
+    const timestampEndToUse = parseTimestamp(timestampEnd, new Date());
 
     const repoFilter = repository
       ? `repo:${extractOwnerAndRepo(repository, org).ownerAndRepo}`
@@ -136,7 +144,7 @@ export const searchIssuesAndPRsFactory: ApiFactory<
     const pullRequests: PullRequest[] = [];
 
     const addInvolvedUser = async (username?: string): Promise<void> => {
-      if (!!username && !usersInvolved[username]) {
+      if (username && !usersInvolved[username]) {
         const user = await getUser({
           octokit,
           username,
@@ -150,7 +158,7 @@ export const searchIssuesAndPRsFactory: ApiFactory<
     };
 
     for (const curr of rawPRsAndIssues) {
-      const [owner, repo] = curr.repository_url.split('/').slice(-2);
+      const [owner = '', repo = ''] = curr.repository_url.split('/').slice(-2);
 
       if (includePullRequests && isPullRequest(curr)) {
         const currentUsername = curr.user?.login;

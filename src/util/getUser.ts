@@ -1,7 +1,7 @@
-import { Octokit } from '@octokit/rest';
+import type { Octokit } from '@octokit/rest';
 import { log } from '@tigerdata/mcp-boilerplate';
-import { User } from '../types.js';
-import { Store } from './store.js';
+import type { User } from '../types.js';
+import type { Store } from './store.js';
 
 const getUser = async ({
   octokit,

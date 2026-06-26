@@ -1,6 +1,6 @@
-import { Octokit } from '@octokit/rest';
+import type { Octokit } from '@octokit/rest';
 import { z } from 'zod';
-import { Store } from './util/store.js';
+import type { Store } from './util/store.js';
 
 export const zCommit = z.object({
   author: z.string().nullable(),

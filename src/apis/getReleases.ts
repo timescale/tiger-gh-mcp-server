@@ -1,7 +1,7 @@
-import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
+import type { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
-import { Release, ServerContext, zRelease } from '../types.js';
-import { getDefaultSince } from '../util/date.js';
+import { type Release, type ServerContext, zRelease } from '../types.js';
+import { getDefaultSince, parseTimestamp } from '../util/date.js';
 import { extractOwnerAndRepo } from '../util/string.js';
 
 const DEFAULT_LIMIT = 10;
@@ -34,17 +34,17 @@ const inputSchema = {
   includePrerelease: z
     .boolean()
     .describe('Whether to include prerelease versions. Defaults to false.'),
-  timestampStart: z.coerce
-    .date()
+  timestampStart: z
+    .string()
     .nullable()
     .describe(
-      'Optional start date for filtering releases. Defaults to 1 week ago.',
+      'Optional start date (ISO 8601) for filtering releases. Defaults to 1 week ago.',
     ),
-  timestampEnd: z.coerce
-    .date()
+  timestampEnd: z
+    .string()
     .nullable()
     .describe(
-      'Optional end date for filtering releases. Defaults to the current time.',
+      'Optional end date (ISO 8601) for filtering releases. Defaults to the current time.',
     ),
 } as const;
 
@@ -80,8 +80,11 @@ export const getReleasesFactory: ApiFactory<
     const allReleases = [];
 
     const limitToUse = limit || DEFAULT_LIMIT;
-    const timestampStartToUse = timestampStart || getDefaultSince();
-    const timestampEndToUse = timestampEnd || new Date();
+    const timestampStartToUse = parseTimestamp(
+      timestampStart,
+      getDefaultSince(),
+    );
+    const timestampEndToUse = parseTimestamp(timestampEnd, new Date());
 
     for (const repo of repositories) {
       try {
