@@ -1,6 +1,6 @@
-import { Octokit } from '@octokit/rest';
-import { IssueComment, PullRequestComment, User } from '../types.js';
-import { Store } from './store.js';
+import type { Octokit } from '@octokit/rest';
+import type { IssueComment, PullRequestComment, User } from '../types.js';
+import type { Store } from './store.js';
 
 export async function resolveUsersFromComments<
   T extends { userId?: number | null },

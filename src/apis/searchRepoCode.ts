@@ -1,6 +1,6 @@
-import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
+import type { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
-import { ServerContext } from '../types.js';
+import type { ServerContext } from '../types.js';
 
 const inputSchema = {
   repository: z
@@ -65,7 +65,7 @@ When referring to a result, always provide a link to the \`url\` field so the us
       throw new Error('Invalid repository format. Use "owner/repo".');
     }
 
-    let repoInfo;
+    let repoInfo: Awaited<ReturnType<typeof octokit.repos.get>>;
     try {
       repoInfo = await octokit.repos.get({
         owner,

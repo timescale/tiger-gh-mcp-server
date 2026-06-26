@@ -1,10 +1,14 @@
-import { ApiFactory, InferSchema, log } from '@tigerdata/mcp-boilerplate';
+import {
+  type ApiFactory,
+  type InferSchema,
+  log,
+} from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
 import {
-  Issue,
-  PullRequest,
-  ServerContext,
-  User,
+  type Issue,
+  type PullRequest,
+  type ServerContext,
+  type User,
   zIssue,
   zPullRequest,
   zUser,
@@ -13,10 +17,10 @@ import {
   DEFAULT_SINCE_INTERVAL_IN_DAYS,
   getDefaultSince,
 } from '../util/date.js';
-import { getCommits } from '../util/getCommits.js';
 import { isIssue, isPullRequest } from '../util/entityTypes.js';
-import { extractOwnerAndRepo, getRepositoryName } from '../util/string.js';
+import { getCommits } from '../util/getCommits.js';
 import { getUser } from '../util/getUser.js';
+import { extractOwnerAndRepo, getRepositoryName } from '../util/string.js';
 
 const inputSchema = {
   username: z
@@ -136,7 +140,7 @@ export const searchIssuesAndPRsFactory: ApiFactory<
     const pullRequests: PullRequest[] = [];
 
     const addInvolvedUser = async (username?: string): Promise<void> => {
-      if (!!username && !usersInvolved[username]) {
+      if (username && !usersInvolved[username]) {
         const user = await getUser({
           octokit,
           username,
@@ -150,7 +154,7 @@ export const searchIssuesAndPRsFactory: ApiFactory<
     };
 
     for (const curr of rawPRsAndIssues) {
-      const [owner, repo] = curr.repository_url.split('/').slice(-2);
+      const [owner = '', repo = ''] = curr.repository_url.split('/').slice(-2);
 
       if (includePullRequests && isPullRequest(curr)) {
         const currentUsername = curr.user?.login;

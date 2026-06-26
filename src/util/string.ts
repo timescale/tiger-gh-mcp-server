@@ -3,8 +3,8 @@ export const extractOwnerAndRepo = (
   defaultOwner: string,
 ): { owner: string; repoName: string; ownerAndRepo: string } => {
   const [a, b] = repoAndMaybeOwner.split('/', 2);
-  const owner = b ? a : defaultOwner;
-  const repoName = b || a;
+  const owner = b ? (a ?? defaultOwner) : defaultOwner;
+  const repoName = b || a || repoAndMaybeOwner;
   return {
     owner,
     repoName,

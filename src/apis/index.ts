@@ -1,11 +1,11 @@
-import { getCommitsFactory } from './getCommits.js';
-import { getUsersFactory } from './getUsers.js';
-import { getPullRequestFactory } from './getPullRequest.js';
-import { getIssueFactory } from './getIssue.js';
-import { searchRepoCode } from './searchRepoCode.js';
 import { findRepos } from './findRepos.js';
+import { getCommitsFactory } from './getCommits.js';
+import { getIssueFactory } from './getIssue.js';
+import { getPullRequestFactory } from './getPullRequest.js';
 import { getReleasesFactory } from './getReleases.js';
+import { getUsersFactory } from './getUsers.js';
 import { searchIssuesAndPRsFactory } from './searchIssuesAndPRs.js';
+import { searchRepoCode } from './searchRepoCode.js';
 
 export const apiFactories = [
   findRepos,

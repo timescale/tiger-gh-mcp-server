@@ -2,11 +2,14 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "npm",
-      "script": "install",
+      "label": "bun: install",
+      "type": "shell",
+      "command": "./bun install",
       "group": "build",
-      "label": "npm: install",
       "detail": "Install project dependencies",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -17,12 +20,15 @@
       }
     },
     {
-      "type": "npm",
-      "script": "build",
+      "label": "bun: build",
+      "type": "shell",
+      "command": "./bun run build",
       "group": "build",
-      "label": "npm: build",
       "detail": "Build the project",
-      "dependsOn": "npm: install",
+      "dependsOn": "bun: install",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -30,12 +36,13 @@
         "panel": "shared",
         "showReuseMessage": true,
         "clear": false
-      }
+      },
+      "problemMatcher": "$tsc"
     },
     {
       "label": "Debug Github MCP - Build Only",
       "dependsOrder": "sequence",
-      "dependsOn": ["npm: install", "npm: build"],
+      "dependsOn": ["bun: install", "bun: build"],
       "group": "build"
     }
   ]

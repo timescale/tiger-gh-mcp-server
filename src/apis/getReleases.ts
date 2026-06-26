@@ -1,6 +1,6 @@
-import { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
+import type { ApiFactory, InferSchema } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
-import { Release, ServerContext, zRelease } from '../types.js';
+import { type Release, type ServerContext, zRelease } from '../types.js';
 import { getDefaultSince } from '../util/date.js';
 import { extractOwnerAndRepo } from '../util/string.js';
 

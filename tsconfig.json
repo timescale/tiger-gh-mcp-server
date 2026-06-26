@@ -2,15 +2,21 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "target": "ES2022",
-    "module": "Node16",
-    "moduleResolution": "Node16",
+    "target": "ESNext",
+    "types": ["bun"],
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
     "resolveJsonModule": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "inlineSources": true
   },
   "include": ["./src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

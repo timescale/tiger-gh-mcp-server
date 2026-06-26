@@ -1,6 +1,6 @@
-import { Octokit } from '@octokit/rest';
+import type { Octokit } from '@octokit/rest';
 import { log } from '@tigerdata/mcp-boilerplate';
-import { User } from '../types.js';
+import type { User } from '../types.js';
 import { getUser } from './getUser.js';
 
 const getUsers = async (octokit: Octokit, org: string): Promise<User[]> => {
