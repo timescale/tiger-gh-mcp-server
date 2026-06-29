@@ -1,6 +1,6 @@
 import type { Octokit } from '@octokit/rest';
+import type { Cache } from '@tigerdata/mcp-boilerplate';
 import { z } from 'zod';
-import type { Store } from './util/store.js';
 
 export const zCommit = z.object({
   author: z.string().nullable(),
@@ -141,5 +141,5 @@ export type Release = z.infer<typeof zRelease>;
 export interface ServerContext extends Record<string, unknown> {
   octokit: Octokit;
   org: string;
-  userStore: Store<User>;
+  userStore: Cache<User>;
 }

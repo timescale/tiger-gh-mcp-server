@@ -1,12 +1,12 @@
 import type { Octokit } from '@octokit/rest';
+import type { Cache } from '@tigerdata/mcp-boilerplate';
 import type { IssueComment, PullRequestComment, User } from '../types.js';
-import type { Store } from './store.js';
 
 export async function resolveUsersFromComments<
   T extends { userId?: number | null },
 >(
   rawComments: T[],
-  userStore: Store<User>,
+  userStore: Cache<User>,
 ): Promise<{ userMap: Map<number, User>; allUsers: User[] | undefined }> {
   const userMap = new Map<number, User>();
   const allUsers = await userStore?.get();
@@ -34,7 +34,7 @@ export async function getComments({
   owner: string;
   repository: string;
   issueNumber: number;
-  userStore: Store<User>;
+  userStore: Cache<User>;
 }): Promise<IssueComment[]> {
   const rawComments = await octokit.paginate(octokit.rest.issues.listComments, {
     owner,
@@ -64,7 +64,7 @@ export async function getPullRequestComments({
   owner: string;
   repository: string;
   pullNumber: number;
-  userStore: Store<User>;
+  userStore: Cache<User>;
 }): Promise<PullRequestComment[]> {
   const rawComments = await octokit.paginate(
     octokit.rest.pulls.listReviewComments,
