@@ -1,9 +1,8 @@
 import { throttling } from '@octokit/plugin-throttling';
 import { Octokit } from '@octokit/rest';
-import { log } from '@tigerdata/mcp-boilerplate';
+import { Cache, log } from '@tigerdata/mcp-boilerplate';
 import type { ServerContext, User } from './types.js';
 import { getUsers } from './util/getUsers.js';
-import { Store } from './util/store.js';
 
 export const serverInfo = {
   name: 'tiger-gh',
@@ -65,7 +64,7 @@ const octokit = new ThrottledOktokit({
   },
 });
 
-const userStore = new Store<User>({
+const userStore = new Cache<User>({
   fetch: (): Promise<User[]> => getUsers(octokit, org),
 });
 

@@ -1,7 +1,6 @@
 import type { Octokit } from '@octokit/rest';
-import { log } from '@tigerdata/mcp-boilerplate';
+import { type Cache, log } from '@tigerdata/mcp-boilerplate';
 import type { User } from '../types.js';
-import type { Store } from './store.js';
 
 const getUser = async ({
   octokit,
@@ -10,7 +9,7 @@ const getUser = async ({
 }: {
   octokit: Octokit;
   username: string;
-  userStore?: Store<User>;
+  userStore?: Cache<User>;
 }): Promise<User | null> => {
   log.info('Fetching member by username', { username });
 
