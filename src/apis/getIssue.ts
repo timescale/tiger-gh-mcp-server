@@ -79,13 +79,15 @@ export const getIssueFactory: ApiFactory<
         assignee: issue.data.assignee?.login ?? null,
         assignees: issue.data.assignees?.map((a) => a.login) ?? [],
         ...(includeComments
-          ? {comments: await getComments({
-              octokit,
-              owner,
-              repository,
-              issueNumber,
-              userStore,
-            })}
+          ? {
+              comments: await getComments({
+                octokit,
+                owner,
+                repository,
+                issueNumber,
+                userStore,
+              }),
+            }
           : {}),
       };
 
