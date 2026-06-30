@@ -3,17 +3,18 @@
   "configurations": [
     {
       "name": "Debug Github MCP",
-      "type": "node",
+      "type": "bun",
       "request": "launch",
-      "runtimeExecutable": "${workspaceFolder}/bun",
+      "runtime": "${workspaceFolder}/bun",
       "program": "${workspaceFolder}/src/index.ts",
-      "args": ["http"],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
+      "args": [
+        "http"
+      ],
       "cwd": "${workspaceFolder}",
-      "envFile": "${workspaceFolder}/.env",
+      "internalConsoleOptions": "openOnSessionStart",
       "env": {
-        "NODE_ENV": "development"
+        "NODE_ENV": "development",
+        "PORT": "5562"
       },
       "presentation": {
         "group": "mcp",
