@@ -12,39 +12,49 @@ const inputSchema = {
     .array(z.string())
     .min(1)
     .describe(
-      'Array of repository names (format: owner/repo or just repo if within org) to fetch releases for.',
+      'Required. Array of repository names (format: owner/repo or just repo if within org) to fetch releases for.',
     ),
   limit: z
     .number()
     .int()
     .positive()
     .max(500)
-    .nullable()
+    .nullish()
     .describe(
-      `Maximum number of releases to return per repository. Defaults to ${DEFAULT_LIMIT}, max 500.`,
+      `Optional. Maximum number of releases to return per repository. Defaults to ${DEFAULT_LIMIT}, max 500.`,
     ),
   includeAssets: z
     .boolean()
+    .nullish()
+    .transform((v) => v ?? false)
     .describe(
-      'Whether or not to include assets such as published artifact metadata. Defaults to false.',
+      'Optional. Whether or not to include assets such as published artifact metadata. Defaults to false.',
     ),
   includeDraft: z
     .boolean()
-    .describe('Whether to include draft releases. Defaults to false.'),
+    .nullish()
+    .transform((v) => v ?? false)
+    .describe(
+      'Optional. Whether to include draft releases. Defaults to false.',
+    ),
   includePrerelease: z
     .boolean()
-    .describe('Whether to include prerelease versions. Defaults to false.'),
+    .nullish()
+    .transform((v) => v ?? false)
+    .describe(
+      'Optional. Whether to include prerelease versions. Defaults to false.',
+    ),
   timestampStart: z
     .string()
-    .nullable()
+    .nullish()
     .describe(
-      'Optional start date (ISO 8601) for filtering releases. Defaults to 1 week ago.',
+      'Optional. Start date (ISO 8601) for filtering releases. Defaults to 1 week ago.',
     ),
   timestampEnd: z
     .string()
-    .nullable()
+    .nullish()
     .describe(
-      'Optional end date (ISO 8601) for filtering releases. Defaults to the current time.',
+      'Optional. End date (ISO 8601) for filtering releases. Defaults to the current time.',
     ),
 } as const;
 

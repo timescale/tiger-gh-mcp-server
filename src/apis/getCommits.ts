@@ -8,18 +8,20 @@ import {
 } from '../util/date.js';
 
 const inputSchema = {
-  username: z.string().describe('The GitHub username to fetch commits for.'),
+  username: z
+    .string()
+    .describe('Required. The GitHub username to fetch commits for.'),
   timestampStart: z
     .string()
-    .nullable()
+    .nullish()
     .describe(
-      `Optional start date (ISO 8601) for filtering commits. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
+      `Optional. Start date (ISO 8601) for filtering commits. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
     ),
   timestampEnd: z
     .string()
-    .nullable()
+    .nullish()
     .describe(
-      'Optional end date (ISO 8601) for filtering commits. Defaults to the current time.',
+      'Optional. End date (ISO 8601) for filtering commits. Defaults to the current time.',
     ),
 } as const;
 

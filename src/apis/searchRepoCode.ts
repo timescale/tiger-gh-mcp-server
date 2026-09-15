@@ -6,11 +6,11 @@ const inputSchema = {
   repository: z
     .string()
     .min(1)
-    .describe('The repository to search in, e.g., "owner/repo".'),
+    .describe('Required. The repository to search in, e.g., "owner/repo".'),
   searchTerm: z
     .string()
     .min(1)
-    .describe('The term to search for in the repository.'),
+    .describe('Required. The term to search for in the repository.'),
 } as const;
 
 const outputSchema = {

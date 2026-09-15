@@ -6,7 +6,7 @@ const inputSchema = {
   searchTerm: z
     .string()
     .min(1)
-    .describe('The term to search for matching repositories.'),
+    .describe('Required. The term to search for matching repositories.'),
 } as const;
 
 const outputSchema = {

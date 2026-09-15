@@ -26,44 +26,62 @@ import { extractOwnerAndRepo, getRepositoryName } from '../util/string.js';
 const inputSchema = {
   username: z
     .string()
-    .nullable()
+    .nullish()
     .describe(
-      'Limit the search to this particular GitHub username. If specified, will only return PRs and/or issues that involve specified username. Uses GitHub\'s "involves:" search which includes issues/PRs the user created, commented on, or was mentioned in.',
+      'Optional. Limit the search to this particular GitHub username. If specified, will only return PRs and/or issues that involve specified username. Uses GitHub\'s "involves:" search which includes issues/PRs the user created, commented on, or was mentioned in.',
     ),
   repository: z
     .string()
-    .nullable()
+    .nullish()
     .describe(
-      'The repository to limit search to (format: owner/repo or just repo-name if within the configured org). If specified, will only return PRs and/or issues that are within specified repository.',
+      'Optional. The repository to limit search to (format: owner/repo or just repo-name if within the configured org). If specified, will only return PRs and/or issues that are within specified repository.',
     ),
   searchTerm: z
     .string()
-    .nullable()
-    .describe('Limit results to those that match the given keywords'),
+    .nullish()
+    .describe(
+      'Optional. Limit results to those that match the given keywords.',
+    ),
   timestampStart: z
     .string()
-    .nullable()
+    .nullish()
     .describe(
-      `Optional start date (ISO 8601) for filtering activity. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
+      `Optional. Start date (ISO 8601) for filtering activity. Defaults to ${DEFAULT_SINCE_INTERVAL_IN_DAYS} days ago.`,
     ),
   timestampEnd: z
     .string()
-    .nullable()
+    .nullish()
     .describe(
-      'Optional end date (ISO 8601) for filtering activity. Defaults to the current time.',
+      'Optional. End date (ISO 8601) for filtering activity. Defaults to the current time.',
     ),
   includeAllCommits: z
     .boolean()
+    .nullish()
+    .transform((v) => v ?? false)
     .describe(
-      'If true, includes all commits for each pull request in the results. Defaults to false. Use sparingly as this significantly increases token use.',
+      'Optional. If true, includes all commits for each pull request in the results. Defaults to false. Use sparingly as this significantly increases token use.',
     ),
   includeClosed: z
     .boolean()
-    .describe('If true, will return PRs and/or issues that have been closed.'),
-  includeIssues: z.boolean().describe('If true, will include relevant issues.'),
+    .nullish()
+    .transform((v) => v ?? false)
+    .describe(
+      'Optional. If true, will return PRs and/or issues that have been closed. Defaults to false.',
+    ),
+  includeIssues: z
+    .boolean()
+    .nullish()
+    .transform((v) => v ?? true)
+    .describe(
+      'Optional. If true, will include relevant issues. Defaults to true.',
+    ),
   includePullRequests: z
     .boolean()
-    .describe('If true, will include relevant pull requests.'),
+    .nullish()
+    .transform((v) => v ?? true)
+    .describe(
+      'Optional. If true, will include relevant pull requests. Defaults to true.',
+    ),
 } as const;
 
 const outputSchema = {
