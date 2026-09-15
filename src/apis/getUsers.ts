@@ -5,9 +5,9 @@ import { type ServerContext, zUser } from '../types.js';
 const inputSchema = {
   username: z
     .string()
-    .nullable()
+    .nullish()
     .describe(
-      'Filters by username (GitHub `login` field). This will match on any user whose login/username includes the given string.',
+      'Optional. Filters by username (GitHub `login` field). Defaults to returning all users. This will match on any user whose login/username includes the given string.',
     ),
 } as const;
 

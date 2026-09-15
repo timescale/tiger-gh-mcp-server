@@ -13,27 +13,45 @@ const inputSchema = {
   url: z
     .string()
     .min(1)
-    .nullable()
-    .describe('The GitHub pull request URL to fetch.'),
+    .nullish()
+    .describe(
+      'Optional. The GitHub pull request URL to fetch. Provide either url, or both pullNumber and repository.',
+    ),
   pullNumber: z
     .number()
     .min(0)
-    .nullable()
-    .describe('The pull request number to fetch.'),
+    .nullish()
+    .describe(
+      'Optional. The pull request number to fetch. Required if url is not provided.',
+    ),
   repository: z
     .string()
     .min(1)
-    .nullable()
-    .describe('The repository name when using pullNumber.'),
+    .nullish()
+    .describe(
+      'Optional. The repository name when using pullNumber. Required if url is not provided.',
+    ),
   includeCommits: z
     .boolean()
-    .describe('If true, includes all commits for the pull request.'),
+    .nullish()
+    .transform((v) => v ?? false)
+    .describe(
+      'Optional. If true, includes all commits for the pull request. Defaults to false.',
+    ),
   includeComments: z
     .boolean()
-    .describe('If true, includes comments on the pull request'),
+    .nullish()
+    .transform((v) => v ?? false)
+    .describe(
+      'Optional. If true, includes comments on the pull request. Defaults to false.',
+    ),
   includeReviewComments: z
     .boolean()
-    .describe('If true, includes all review comments for the pull request.'),
+    .nullish()
+    .transform((v) => v ?? false)
+    .describe(
+      'Optional. If true, includes all review comments for the pull request. Defaults to false.',
+    ),
 } as const;
 
 const outputSchema = {

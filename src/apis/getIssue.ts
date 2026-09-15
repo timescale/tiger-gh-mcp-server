@@ -5,20 +5,34 @@ import { getComments } from '../util/getComments.js';
 import { parseGitHubURL } from '../util/parsePullRequestURL.js';
 
 const inputSchema = {
-  url: z.string().min(1).nullable().describe('The GitHub issue URL to fetch.'),
+  url: z
+    .string()
+    .min(1)
+    .nullish()
+    .describe(
+      'Optional. The GitHub issue URL to fetch. Provide either url, or both issueNumber and repository.',
+    ),
   issueNumber: z
     .number()
     .min(0)
-    .nullable()
-    .describe('The issue number to fetch.'),
+    .nullish()
+    .describe(
+      'Optional. The issue number to fetch. Required if url is not provided.',
+    ),
   repository: z
     .string()
     .min(1)
-    .nullable()
-    .describe('The repository name when using issueNumber.'),
+    .nullish()
+    .describe(
+      'Optional. The repository name when using issueNumber. Required if url is not provided.',
+    ),
   includeComments: z
     .boolean()
-    .describe('If true, includes all comments for the issue.'),
+    .nullish()
+    .transform((v) => v ?? false)
+    .describe(
+      'Optional. If true, includes all comments for the issue. Defaults to false.',
+    ),
 } as const;
 
 const outputSchema = {
