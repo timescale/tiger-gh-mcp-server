@@ -30,6 +30,26 @@ const inputSchema = {
     .describe(
       'Optional. Limit the search to this particular GitHub username. If specified, will only return PRs and/or issues that involve specified username. Uses GitHub\'s "involves:" search which includes issues/PRs the user created, commented on, or was mentioned in.',
     ),
+  usernames: z
+    .array(z.string())
+    .nullish()
+    .describe(
+      'Optional. Limit the search to any of these GitHub usernames, e.g. every member of a team, in one call. Combined with `username` if both are given. Results are deduplicated across users.',
+    ),
+  authoredOnly: z
+    .boolean()
+    .nullish()
+    .transform((v) => v ?? false)
+    .describe(
+      'Optional. If true, only return PRs and/or issues created by the given username(s) ("author:" instead of "involves:"). Defaults to false.',
+    ),
+  mergedOnly: z
+    .boolean()
+    .nullish()
+    .transform((v) => v ?? false)
+    .describe(
+      'Optional. If true, only return pull requests merged within the time window; issues and unmerged PRs are excluded and includeClosed/includeIssues are ignored. Use this to answer "what shipped". Defaults to false.',
+    ),
   repository: z
     .string()
     .nullish()
@@ -111,6 +131,9 @@ export const searchIssuesAndPRsFactory: ApiFactory<
   },
   fn: async ({
     username,
+    usernames,
+    authoredOnly,
+    mergedOnly,
     repository,
     searchTerm,
     timestampStart,
@@ -120,6 +143,10 @@ export const searchIssuesAndPRsFactory: ApiFactory<
     includeIssues,
     includePullRequests,
   }): Promise<InferSchema<typeof outputSchema>> => {
+    if (mergedOnly) {
+      includeIssues = false;
+      includePullRequests = true;
+    }
     if (!includeIssues && !includePullRequests)
       throw new Error('Must use includeIssues and/or includePullRequests.');
     const timestampStartToUse = parseTimestamp(
@@ -132,30 +159,48 @@ export const searchIssuesAndPRsFactory: ApiFactory<
       ? `repo:${extractOwnerAndRepo(repository, org).ownerAndRepo}`
       : null;
 
-    const query = [
-      includeIssues && includePullRequests
-        ? null
-        : includeIssues
-          ? 'is:issue'
-          : 'is:pr',
-      repoFilter,
-      ...(username ? [`involves:${username}`] : []),
-      !repoFilter && org ? `org:${org}` : null,
-      ...(searchTerm ? [searchTerm] : []),
-      ...(includeClosed ? [] : ['is:open']),
-      `updated:${timestampStartToUse.toISOString()}..${timestampEndToUse.toISOString()}`,
-    ]
-      .filter((x) => !!x)
-      .join(' ');
+    const searchUsernames = [
+      ...new Set([...(username ? [username] : []), ...(usernames ?? [])]),
+    ];
+    const userQualifier = authoredOnly ? 'author' : 'involves';
+    const timeRange = `${timestampStartToUse.toISOString()}..${timestampEndToUse.toISOString()}`;
 
-    const rawPRsAndIssues = await octokit.paginate(
-      octokit.rest.search.issuesAndPullRequests,
-      {
-        q: query,
-        sort: 'updated',
-        order: 'desc',
-      },
+    const buildQuery = (user: string | null): string =>
+      [
+        includeIssues && includePullRequests
+          ? null
+          : includeIssues
+            ? 'is:issue'
+            : 'is:pr',
+        repoFilter,
+        user ? `${userQualifier}:${user}` : null,
+        !repoFilter && org ? `org:${org}` : null,
+        searchTerm || null,
+        mergedOnly ? 'is:merged' : includeClosed ? null : 'is:open',
+        mergedOnly ? `merged:${timeRange}` : `updated:${timeRange}`,
+      ]
+        .filter((x) => !!x)
+        .join(' ');
+
+    // GitHub search ANDs repeated user qualifiers, so each user gets its own search.
+    const resultsPerQuery = await Promise.all(
+      (searchUsernames.length ? searchUsernames : [null]).map((user) =>
+        octokit.paginate(octokit.rest.search.issuesAndPullRequests, {
+          q: buildQuery(user),
+          sort: 'updated',
+          order: 'desc',
+        }),
+      ),
     );
+    const seenUrls = new Set<string>();
+    const rawPRsAndIssues = resultsPerQuery
+      .flat()
+      .filter((item) => {
+        if (seenUrls.has(item.html_url)) return false;
+        seenUrls.add(item.html_url);
+        return true;
+      })
+      .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 
     const usersInvolved: Record<string, User> = {};
     const issues: Issue[] = [];
@@ -196,7 +241,9 @@ export const searchIssuesAndPRsFactory: ApiFactory<
           updatedAt: curr.updated_at,
           url: curr.html_url,
           commits:
-            includeAllCommits && curr.user?.login === username
+            includeAllCommits &&
+            curr.user?.login &&
+            searchUsernames.includes(curr.user.login)
               ? await getCommits(octokit, owner, repo, curr.number)
               : undefined,
         });
