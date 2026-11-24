@@ -24,17 +24,11 @@ import { getUser } from '../util/getUser.js';
 import { extractOwnerAndRepo, getRepositoryName } from '../util/string.js';
 
 const inputSchema = {
-  username: z
-    .string()
-    .nullish()
-    .describe(
-      'Optional. Limit the search to this particular GitHub username. If specified, will only return PRs and/or issues that involve specified username. Uses GitHub\'s "involves:" search which includes issues/PRs the user created, commented on, or was mentioned in.',
-    ),
   usernames: z
     .array(z.string())
     .nullish()
     .describe(
-      'Optional. Limit the search to any of these GitHub usernames, e.g. every member of a team, in one call. Combined with `username` if both are given. Results are deduplicated across users.',
+      'Optional. Limit the search to any of these GitHub usernames, e.g. every member of a team, in one call. Results are deduplicated across users.',
     ),
   authoredOnly: z
     .boolean()
@@ -130,7 +124,6 @@ export const searchIssuesAndPRsFactory: ApiFactory<
     outputSchema,
   },
   fn: async ({
-    username,
     usernames,
     authoredOnly,
     mergedOnly,
@@ -159,9 +152,7 @@ export const searchIssuesAndPRsFactory: ApiFactory<
       ? `repo:${extractOwnerAndRepo(repository, org).ownerAndRepo}`
       : null;
 
-    const searchUsernames = [
-      ...new Set([...(username ? [username] : []), ...(usernames ?? [])]),
-    ];
+    const searchUsernames = [...new Set(usernames ?? [])];
     const userQualifier = authoredOnly ? 'author' : 'involves';
     const timeRange = `${timestampStartToUse.toISOString()}..${timestampEndToUse.toISOString()}`;
 
